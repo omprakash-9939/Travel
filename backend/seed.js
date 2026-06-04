@@ -117,12 +117,11 @@ async function seedHotels() {
 }
 
 async function seedUsers() {
-  const adminHash = await bcrypt.hash('admin123', 12);
-  const userHash = await bcrypt.hash('demo1234', 12);
   await User.deleteMany({ email: { $in: ['admin@dataart.travel', 'demo@dataart.travel'] } });
+  // Plain passwords — User model pre-save hook hashes them once
   await User.create([
-    { name: 'Admin User', email: 'admin@dataart.travel', password: adminHash, role: 'admin', wallet: 5000 },
-    { name: 'Demo Traveler', email: 'demo@dataart.travel', password: userHash, role: 'user', wallet: 2500, travelProfile: { homeCountry: 'India', homeCity: 'Delhi', budgetMax: 80000, preferredAirlines: ['6E', 'UK'], hotelStars: 4 } }
+    { name: 'Admin User', email: 'admin@dataart.travel', password: 'admin123', role: 'admin', wallet: 5000 },
+    { name: 'Demo Traveler', email: 'demo@dataart.travel', password: 'demo1234', role: 'user', wallet: 2500, travelProfile: { homeCountry: 'India', homeCity: 'Delhi', budgetMax: 80000, preferredAirlines: ['6E', 'UK'], hotelStars: 4 } }
   ]);
   console.log('✓ Users: admin@dataart.travel / admin123, demo@dataart.travel / demo1234');
 }

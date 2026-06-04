@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plane, ArrowRight } from 'lucide-react';
 import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
+import { usePersonalization } from '../context/PersonalizationContext';
 import { formatTime, formatDuration, cabinToApi } from '../utils/format';
 import { SkeletonList } from '../components/Skeleton';
 import '../styles/flights.css';
@@ -9,6 +11,8 @@ import '../styles/flights.css';
 export default function FlightSearchPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { trackFlightView, trackBookingStart } = usePersonalization();
   const [flights, setFlights] = useState([]);
   const [apiFilters, setApiFilters] = useState({ airlines: [], priceRange: {} });
   const [loading, setLoading] = useState(true);
@@ -84,6 +88,10 @@ export default function FlightSearchPage() {
     : [...new Map(flights.map(f => [f.airline?.code, f.airline])).values()].filter(Boolean);
 
   const bookFlight = (flight) => {
+    if (user) {
+      trackFlightView(flight);
+      trackBookingStart(flight, 'flight');
+    }
     const price = (flight.cabins?.[cabinKey]?.price ?? flight.cabins?.economy?.price) * adults;
     navigate('/checkout', {
       state: {

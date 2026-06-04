@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Star, MapPin, Wifi } from 'lucide-react';
 import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
+import { usePersonalization } from '../context/PersonalizationContext';
 import { SkeletonList } from '../components/Skeleton';
 import '../styles/hotels.css';
 
 export default function HotelSearchPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { trackHotelView, trackBookingStart } = usePersonalization();
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [city, setCity] = useState(searchParams.get('city') || 'Goa');
@@ -112,14 +116,20 @@ export default function HotelSearchPage() {
                     <button
                       type="button"
                       className="btn-primary btn-sm"
-                      onClick={() => navigate('/checkout', {
+                      onClick={() => {
+                        if (user) {
+                          trackHotelView(h);
+                          trackBookingStart(h, 'hotel');
+                        }
+                        navigate('/checkout', {
                         state: {
                           type: 'hotel',
                           item: h,
                           meta: { checkIn, checkOut, roomType: h.roomTypes?.[0]?.name },
                           pricing: { total: h.totalPrice || h.minPricePerNight }
                         }
-                      })}
+                      });
+                      }}
                     >
                       Book
                     </button>

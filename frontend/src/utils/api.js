@@ -5,6 +5,14 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 });
 
+api.interceptors.request.use((config) => {
+  const sessionId = sessionStorage.getItem('dt_session_id');
+  if (sessionId) {
+    config.headers['x-session-id'] = sessionId;
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { PersonalizationProvider } from './context/PersonalizationContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import IntegrationsPage from './pages/IntegrationsPage';
@@ -23,6 +24,7 @@ function App() {
     <ThemeProvider>
       <CurrencyProvider>
       <AuthProvider>
+        <PersonalizationProvider>
         <Router>
           <div className="app">
             <Navbar />
@@ -43,6 +45,7 @@ function App() {
             </main>
           </div>
         </Router>
+        </PersonalizationProvider>
       </AuthProvider>
       </CurrencyProvider>
     </ThemeProvider>

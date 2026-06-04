@@ -126,7 +126,7 @@ router.post('/wishlist', protect, async (req, res) => {
       { user: req.user._id },
       {
         $push: {
-          wishlist: { $each: [{ type, itemId, destination, price }], $slice: -50 }
+          wishlist: { $each: [{ itemType: type, itemId, destination, price }], $slice: -50 }
         }
       },
       { upsert: true }

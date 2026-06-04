@@ -13,8 +13,8 @@
  */
 
 const UserActivity       = require('../models/UserActivity');
-const { aggregatePreferences } = require('./preferenceEngine');
-const { buildRecommendations } = require('./recommendationEngine');
+const { aggregatePreferences } = require('../services/preferenceEngine');
+const { buildRecommendations } = require('../services/recommendationEngine');
 
 const INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours
 const BATCH_SIZE  = 50;
