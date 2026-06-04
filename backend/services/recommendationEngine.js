@@ -171,11 +171,37 @@ async function buildContinuePlanning(userId, prefs) {
   }));
 }
 
+const NOTIF_RESEND_WINDOW_MS = 48 * 60 * 60 * 1000; // don't resend same type within 48h
+
+function recentlySent(intent, type) {
+  if (!intent?.sentNotifications?.length) return false;
+  const cutoff = Date.now() - NOTIF_RESEND_WINDOW_MS;
+  return intent.sentNotifications.some(n => n.type === type && new Date(n.sentAt).getTime() > cutoff);
+}
+
 function buildNotifications(prefs, intent) {
   const notifications = [];
   const dest = intent?.primaryPlanningDestination || prefs?.favoriteDestinations?.[0]?.destination;
 
-  if (dest) {
+  // return_reminder: user has searched same destination multiple times (Barcelona pattern)
+  if (
+    dest &&
+    (intent?.breakdown?.repeatSearches >= 1) &&
+    (intent?.tier === 'medium' || intent?.tier === 'high') &&
+    !recentlySent(intent, 'return_reminder')
+  ) {
+    notifications.push({
+      id: `return_reminder_${dest}`,
+      type: 'return_reminder',
+      title: `Still thinking about ${dest}?`,
+      message: `You've been researching ${dest} for a while. Prices are moving — complete your booking before they go up.`,
+      ctaLabel: `Book ${dest}`,
+      ctaUrl: `/hotels?city=${encodeURIComponent(dest)}`,
+      priority: 12
+    });
+  }
+
+  if (dest && !recentlySent(intent, 'price_drop')) {
     const pct = 5 + Math.floor(Math.random() * 8);
     notifications.push({
       id: `price_drop_${dest}`,
@@ -189,7 +215,10 @@ function buildNotifications(prefs, intent) {
   }
 
   const beachFav = prefs?.favoriteDestinations?.find(d => BEACH_DESTINATIONS.has(d.destination));
-  if (beachFav || prefs?.preferredHotelCategories?.some(c => c.category === 'Resort')) {
+  if (
+    (beachFav || prefs?.preferredHotelCategories?.some(c => c.category === 'Resort')) &&
+    !recentlySent(intent, 'selling_fast')
+  ) {
     notifications.push({
       id: 'selling_fast_hotels',
       type: 'selling_fast',
@@ -202,7 +231,7 @@ function buildNotifications(prefs, intent) {
   }
 
   const recentSearch = prefs?.favoriteDestinations?.[1]?.destination || TRENDING[2]?.destination;
-  if (recentSearch) {
+  if (recentSearch && !recentlySent(intent, 'new_deal')) {
     notifications.push({
       id: `new_deal_${recentSearch}`,
       type: 'new_deal',
@@ -359,6 +388,15 @@ async function buildRecommendations(userId) {
     validUntil: new Date(Date.now() + CACHE_TTL_MS),
     builtAt: new Date()
   });
+
+  // Record which notification types were just sent so dedup works on next build
+  if (notifications.length) {
+    const newSent = notifications.map(n => ({ type: n.type, sentAt: new Date() }));
+    await UserIntentScore.updateOne(
+      { user: uid },
+      { $push: { sentNotifications: { $each: newSent } } }
+    );
+  }
 
   return formatCachePayload(cache.toObject ? cache.toObject() : cache);
 }

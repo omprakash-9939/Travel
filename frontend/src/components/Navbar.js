@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ChevronDown, LogOut, BookOpen, Settings, Wallet, Menu, X, Moon, Sun, Sparkles } from 'lucide-react';
+import { usePersonalization } from '../context/PersonalizationContext';
+import { ChevronDown, LogOut, BookOpen, Settings, Wallet, Menu, X, Moon, Sun, Sparkles, Bell } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
 import '../styles/navbar.css';
@@ -10,14 +11,20 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { currency, setCurrency, symbols } = useCurrency();
+  const { notifications, dismissNotification } = usePersonalization();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const profileRef = useRef();
+  const notifRef = useRef();
 
   useEffect(() => {
-    const handler = (e) => { if (!profileRef.current?.contains(e.target)) setProfileOpen(false); };
+    const handler = (e) => {
+      if (!profileRef.current?.contains(e.target)) setProfileOpen(false);
+      if (!notifRef.current?.contains(e.target)) setNotifOpen(false);
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
@@ -61,6 +68,57 @@ export default function Navbar() {
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <Link to="/ai" className="nav-ai-link" aria-label="AI Hub"><Sparkles size={18} /> AI</Link>
+
+          {user && (
+            <div className="notif-bell" ref={notifRef}>
+              <button
+                type="button"
+                className="notif-btn"
+                onClick={() => setNotifOpen(o => !o)}
+                aria-label={`Notifications${notifications.length ? ` (${notifications.length})` : ''}`}
+              >
+                <Bell size={18} />
+                {notifications.length > 0 && (
+                  <span className="notif-count">{notifications.length > 9 ? '9+' : notifications.length}</span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="notif-dropdown" role="dialog" aria-label="Notifications panel">
+                  <div className="notif-header">Notifications</div>
+                  {notifications.length === 0 ? (
+                    <div className="notif-empty">You're all caught up</div>
+                  ) : (
+                    notifications.map(n => (
+                      <div key={n.id} className="notif-item">
+                        <div className="notif-item-body">
+                          <div className="notif-item-title">{n.title}</div>
+                          <div className="notif-item-msg">{n.message}</div>
+                        </div>
+                        <div className="notif-item-actions">
+                          <button
+                            type="button"
+                            className="notif-item-cta"
+                            onClick={() => { setNotifOpen(false); navigate(n.ctaUrl || '/'); }}
+                          >
+                            {n.ctaLabel}
+                          </button>
+                          <button
+                            type="button"
+                            className="notif-item-dismiss"
+                            aria-label="Dismiss"
+                            onClick={() => dismissNotification(n.id)}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {user ? (
             <div className="profile-menu" ref={profileRef}>
               <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>

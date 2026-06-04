@@ -118,6 +118,9 @@ export const PersonalizationProvider = ({ children }) => {
   const trackBookingStart = useCallback((item, type) =>
     track('booking_started', { bookingType: type, destination: type === 'flight' ? item.destination?.city : item.location?.city, price: item.totalPrice }), [track]);
 
+  const trackBookingComplete = useCallback((item, type) =>
+    track('booking_completed', { bookingType: type, destination: type === 'flight' ? item.destination?.city : item.location?.city, price: item.totalPrice }), [track]);
+
   const trackDestination = useCallback((name) =>
     track('destination_viewed', { destination: name }), [track]);
 
@@ -171,6 +174,7 @@ export const PersonalizationProvider = ({ children }) => {
       trackFlightView,
       trackHotelView,
       trackBookingStart,
+      trackBookingComplete,
       trackDestination,
       addToWishlist,
       dismissNotification,

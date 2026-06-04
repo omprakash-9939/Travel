@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { usePersonalization } from '../context/PersonalizationContext';
 import api from '../utils/api';
 
 export default function BookingCheckoutPage() {
@@ -9,6 +10,7 @@ export default function BookingCheckoutPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { format } = useCurrency();
+  const { trackBookingComplete } = usePersonalization();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('wallet');
@@ -115,6 +117,7 @@ export default function BookingCheckoutPage() {
                 transactionId: response.razorpay_payment_id,
                 method: 'razorpay'
               });
+              trackBookingComplete(item, type);
               navigate('/bookings', { state: { booked: data.booking?.bookingId } });
             } catch (err) {
               setError(err.response?.data?.message || 'Payment verification failed');
@@ -140,6 +143,7 @@ export default function BookingCheckoutPage() {
       }
 
       const data = await completeBooking();
+      trackBookingComplete(item, type);
       navigate('/bookings', { state: { booked: data.booking?.bookingId } });
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed');
