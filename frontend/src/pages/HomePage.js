@@ -6,6 +6,9 @@ import {
   Percent, Globe, Heart, Award, Headphones, Tag, MapPin, X
 } from 'lucide-react';
 import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
+import { usePersonalization } from '../context/PersonalizationContext';
+import PersonalizedHomepage from '../components/PersonalizationHomepage';
 import '../styles/home.css';
 
 // ─── Airport Data ───────────────────────────────────────────────────────────
@@ -177,6 +180,8 @@ const today = new Date().toISOString().split('T')[0];
 // ─── HOMEPAGE ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { trackFlightSearch, trackHotelSearch, trackDestination } = usePersonalization();
 
   // Flight Search State
   const [tripType, setTripType] = useState('oneway');
@@ -226,6 +231,17 @@ export default function HomePage() {
   };
 
   const handleFlightSearch = () => {
+    if (user) {
+      trackFlightSearch({
+        from: fromAirport.code,
+        to: toAirport.code,
+        fromCity: fromAirport.city,
+        toCity: toAirport.city,
+        date: depDate,
+        cabin,
+        tripType
+      });
+    }
     const params = new URLSearchParams({
       from: fromAirport.code,
       to: toAirport.code,
@@ -243,6 +259,15 @@ export default function HomePage() {
   };
 
   const handleHotelSearch = () => {
+    if (user) {
+      trackHotelSearch({
+        city: hotelCity,
+        checkIn: hotelCheckIn,
+        checkOut: hotelCheckOut,
+        guests: hotelGuests,
+        rooms: hotelRooms
+      });
+    }
     const params = new URLSearchParams({ city: hotelCity, checkIn: hotelCheckIn, checkOut: hotelCheckOut, guests: hotelGuests, rooms: hotelRooms });
     navigate(`/hotels?${params}`);
   };
@@ -455,6 +480,14 @@ export default function HomePage() {
         </div>
       </section>
 
+      {user && (
+        <section className="personalization-zone">
+          <div className="container">
+            <PersonalizedHomepage />
+          </div>
+        </section>
+      )}
+
       {/* ── Exclusive Offers ─────────────────────────────── */}
       <section className="offers-section">
         <div className="container">
@@ -544,7 +577,12 @@ export default function HomePage() {
           </div>
           <div className="destinations-grid">
             {DESTINATIONS.map((dest, i) => (
-              <a key={i} className="dest-card" href={`/holidays?dest=${dest.name.toLowerCase()}`}>
+              <a
+                key={i}
+                className="dest-card"
+                href={`/hotels?city=${encodeURIComponent(dest.name)}`}
+                onClick={() => user && trackDestination(dest.name)}
+              >
                 <div className="dest-img" style={{ backgroundImage: `url(${dest.img})` }}>
                   <div className="dest-overlay" />
                   <span className="dest-type">{dest.type}</span>

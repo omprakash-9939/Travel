@@ -55,7 +55,15 @@ export const PersonalizationProvider = ({ children }) => {
         api.get('/personalization/notifications')
       ]);
 
-      if (recsRes.status   === 'fulfilled') setRecommendations(recsRes.value.data.data);
+      if (recsRes.status === 'fulfilled') {
+        const data = recsRes.value.data.data;
+        setRecommendations(data);
+        const empty = !data?.recommendedFlights?.length && !data?.recommendedHotels?.length
+          && !data?.continuePlanning?.length;
+        if (empty) {
+          api.post('/personalization/preferences/refresh').catch(() => {});
+        }
+      }
       if (prefsRes.status  === 'fulfilled') setPreferences(prefsRes.value.data.preferences);
       if (intentRes.status === 'fulfilled') setIntentScore(intentRes.value.data.intent);
       if (recentRes.status === 'fulfilled') setRecentlyViewed({
