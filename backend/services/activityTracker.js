@@ -76,7 +76,7 @@ async function maybeReturnVisit(userId, sessionId) {
   return gap > 30 * 60 * 1000;
 }
 
-async function updateIntentScore(userId, eventType, extraPoints = 0, destination) {
+async function updateIntentScore(userId, eventType, extraPoints = 0, destination, isRepeat = false) {
   let points = (INTENT_WEIGHTS[eventType] || 0) + extraPoints;
 
   let intent = await UserIntentScore.findOne({ user: userId });
@@ -87,6 +87,10 @@ async function updateIntentScore(userId, eventType, extraPoints = 0, destination
   const key = breakdownKey(eventType);
   if (key) {
     intent.breakdown[key] = (intent.breakdown[key] || 0) + 1;
+  }
+
+  if (isRepeat) {
+    intent.breakdown.repeatSearches = (intent.breakdown.repeatSearches || 0) + 1;
   }
 
   intent.score = Math.min(100, (intent.score || 0) + points);
@@ -108,9 +112,10 @@ async function track(userId, eventType, metadata = {}, sessionId) {
   let intentPoints = INTENT_WEIGHTS[eventType] || 0;
   let extra = 0;
 
+  let isRepeat = false;
   if (['flight_search', 'hotel_search'].includes(eventType)) {
-    const repeat = await isRepeatSearch(userId, eventType, metadata);
-    if (repeat) extra += REPEAT_SEARCH_BONUS;
+    isRepeat = await isRepeatSearch(userId, eventType, metadata);
+    if (isRepeat) extra += REPEAT_SEARCH_BONUS;
   }
 
   if (sessionId && (await maybeReturnVisit(userId, sessionId))) {
@@ -121,7 +126,7 @@ async function track(userId, eventType, metadata = {}, sessionId) {
       metadata: { page: metadata.page },
       intentPoints: INTENT_WEIGHTS.return_visit
     });
-    await updateIntentScore(userId, 'return_visit', 0, metadata.destination);
+    await updateIntentScore(userId, 'return_visit', 0, metadata.destination, false);
   }
 
   const dest = metadata.destination || metadata.city || metadata.origin;
@@ -134,7 +139,7 @@ async function track(userId, eventType, metadata = {}, sessionId) {
     intentPoints: intentPoints + extra
   });
 
-  await updateIntentScore(userId, eventType, extra, dest);
+  await updateIntentScore(userId, eventType, extra, dest, isRepeat);
 }
 
 // ── Convenience wrappers (used by route handlers) ─────────────────────────
