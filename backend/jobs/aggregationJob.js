@@ -15,6 +15,7 @@
 const UserActivity       = require('../models/UserActivity');
 const { aggregatePreferences } = require('../services/preferenceEngine');
 const { buildRecommendations } = require('../services/recommendationEngine');
+const engagementEngine   = require('../services/engagementEngine');
 
 const INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours
 const BATCH_SIZE  = 50;
@@ -40,6 +41,9 @@ async function runOnce() {
       await Promise.allSettled(batch.map(async userId => {
         try {
           await aggregatePreferences(userId);
+          // Engagement axis + intent decay must run before recommendations so
+          // the notification matrix sees fresh engagement/trajectory (EP-09).
+          await engagementEngine.computeAndPersist(userId);
           await buildRecommendations(userId);
         } catch (err) {
           console.error(`[AggregationJob] Failed for user ${userId}:`, err.message);

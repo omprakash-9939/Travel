@@ -9,6 +9,39 @@ const UserActivity = require('../models/UserActivity');
 const UserPreference = require('../models/UserPreference');
 const Booking = require('../models/Booking');
 const Hotel = require('../models/Hotel');
+const { hourToBucket } = require('./timeOfDay');
+
+/** Classify a baggage allowance string (e.g. "15 kg") into a fare posture. */
+function baggageToPreference(kgValues) {
+  if (!kgValues.length) return null;
+  const avg = kgValues.reduce((s, n) => s + n, 0) / kgValues.length;
+  if (avg <= 15) return 'light';
+  if (avg <= 25) return 'standard';
+  return 'heavy';
+}
+
+/** Parse "15 kg" → 15 (number) or null. */
+function parseBaggageKg(str) {
+  if (typeof str === 'number') return str;
+  if (!str) return null;
+  const m = String(str).match(/(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+/** Map an average flight price to a price-sensitivity band. */
+function priceToSensitivity(avgPrice) {
+  if (!avgPrice) return 'unknown';
+  if (avgPrice < 15000) return 'budget';
+  if (avgPrice < 45000) return 'mid';
+  return 'premium';
+}
+
+/** Dominant key in a count map, or null. */
+function dominantKey(map) {
+  const entries = Object.entries(map);
+  if (!entries.length) return null;
+  return entries.sort((a, b) => b[1] - a[1])[0][0];
+}
 
 const INTERNATIONAL_CODES = new Set(['DXB', 'SIN', 'BKK', 'LHR', 'JFK', 'CDG', 'NRT']);
 
@@ -47,6 +80,11 @@ async function aggregatePreferences(userId) {
   let views = 0;
   let totalBookings = bookings.length;
   const cabinCounts = {};
+  const departureBuckets = {};
+  const arrivalBuckets = {};
+  const baggageKgs = [];
+  let refundableCount = 0;
+  let refundableSeen = 0;
 
   const recentlyViewedFlights = [];
   const recentlyViewedHotels = [];
@@ -64,6 +102,18 @@ async function aggregatePreferences(userId) {
 
     if (m.airline) bumpScore(airlineScores, m.airline, 2);
     if (m.cabin) bumpScore(cabinCounts, m.cabin, 1);
+
+    // Time-of-day signal: prefer the explicit bucket, else derive from the hour.
+    const depBucket = m.departureBucket || hourToBucket(m.departureHour);
+    const arrBucket = m.arrivalBucket || hourToBucket(m.arrivalHour);
+    if (depBucket) bumpScore(departureBuckets, depBucket, a.eventType.includes('search') ? 2 : 1);
+    if (arrBucket) bumpScore(arrivalBuckets, arrBucket, a.eventType.includes('search') ? 2 : 1);
+
+    // Fare/baggage signal
+    const kg = parseBaggageKg(m.baggage);
+    if (kg) baggageKgs.push(kg);
+    if (m.refundable === true)  { refundableCount++; refundableSeen++; }
+    if (m.refundable === false) { refundableSeen++; }
 
     if (m.price) {
       if (a.eventType.includes('flight')) flightPrices.push(m.price);
@@ -156,6 +206,11 @@ async function aggregatePreferences(userId) {
     avgTripDuration: Math.round(avg(tripDurations)) || 3,
     prefersDomestic,
     preferredCabin,
+    departureTimePreference: dominantKey(departureBuckets),
+    arrivalTimePreference:   dominantKey(arrivalBuckets),
+    baggagePreference:       baggageToPreference(baggageKgs),
+    prefersRefundable:       refundableSeen > 0 && refundableCount / refundableSeen >= 0.5,
+    priceSensitivity:        priceToSensitivity(Math.round(avg(flightPrices))),
     totalSearches: searches,
     totalViews: views,
     totalBookings,

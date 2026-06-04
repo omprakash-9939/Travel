@@ -4,7 +4,7 @@ title: Fix double event tracking — remove booking events from frontend layer
 epic: EP-03
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — /track rejects server-authoritative events (booking_*, return_visit)
 priority: Must
 wireframe: n/a (code fix; no UI change)
 feature_file: pending

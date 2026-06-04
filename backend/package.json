@@ -8,6 +8,8 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "migrate:personalization": "node services/migrate-personalization.js",
+    "seed:personalization": "node scripts/seedPersonalization.js",
+    "simulate:personalization": "node scripts/simulatePersonalization.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

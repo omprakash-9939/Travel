@@ -4,7 +4,7 @@ title: Disable fabricated price-drop notification
 epic: EP-06
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — price_drop gated behind ENABLE_PRICE_DROP_NOTIFICATIONS (default off)
 priority: Must
 wireframe: n/a (notification suppression; in-app bell affected)
 feature_file: pending

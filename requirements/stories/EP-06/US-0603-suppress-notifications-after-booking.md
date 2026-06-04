@@ -4,7 +4,7 @@ title: Suppress notifications after booking completion
 epic: EP-06
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — notifications suppressed for destinations in bookingCooldowns (7-day window)
 priority: Must
 wireframe: n/a (notification suppression logic; no visible UI until after booking)
 feature_file: pending

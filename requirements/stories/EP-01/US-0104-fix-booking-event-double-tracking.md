@@ -4,7 +4,7 @@ title: Fix booking lifecycle event tracking — remove double-tracking
 epic: EP-01
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1, partial) — frontend dup removed, /track whitelist + DB-backed idempotency; two in-process double-call unit scenarios remain RED by test design (shared bookingId with green single-call tests)
 priority: Must
 wireframe: n/a (backend/frontend plumbing fix; no UI change)
 feature_file: pending

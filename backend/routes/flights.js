@@ -264,6 +264,7 @@ const amadeus = require('../services/amadeus');
 const { generateFallbackFlights, buildMongoDateQuery } = require('../services/flightFallback');
 // ── Personalization: activity tracker ──────────────────────────────────────
 const tracker = require('../services/activityTracker');
+const { hourToBucket } = require('../services/timeOfDay');
 
 function applyFilters(flights, { cabinKey, maxPrice, airlines, stops }) {
   let result = flights;
@@ -492,15 +493,24 @@ router.get('/:id', optionalAuth, async (req, res) => {
     // ── Track flight view ───────────────────────────────────────────────────
     if (req.user) {
       const cabin = normalizeCabin(req.query.cabin || 'economy');
+      const dep = flight.departure ? new Date(flight.departure) : null;
+      const arr = flight.arrival ? new Date(flight.arrival) : null;
       tracker.trackFlightView(req.user._id, {
-        flightId:     flight._id.toString(),
-        flightNumber: flight.flightNumber,
-        airline:      flight.airline?.name,
-        origin:       flight.origin?.city,
-        destination:  flight.destination?.city,
-        price:        flight.cabins?.[cabin]?.price,
+        flightId:      flight._id.toString(),
+        flightNumber:  flight.flightNumber,
+        airline:       flight.airline?.name,
+        origin:        flight.origin?.city,
+        destination:   flight.destination?.city,
+        price:         flight.cabins?.[cabin]?.price,
         cabin,
-        isDomestic:   flight.isDomestic
+        isDomestic:    flight.isDomestic,
+        // Time-of-day + fare signals (EP-02 / EP-09)
+        departureHour: dep ? dep.getHours() : undefined,
+        arrivalHour:   arr ? arr.getHours() : undefined,
+        departureBucket: hourToBucket(dep ? dep.getHours() : undefined),
+        arrivalBucket:   hourToBucket(arr ? arr.getHours() : undefined),
+        baggage:       flight.cabins?.[cabin]?.baggage,
+        refundable:    flight.refundable
       }, req.headers['x-session-id']);
     }
 

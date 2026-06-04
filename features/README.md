@@ -16,8 +16,11 @@
 | [recommendation-engine.feature](recommendation-engine.feature) | EP-04 | US-0401 to US-0403 | 14 | Must / Should | 2–3 |
 | [homepage-personalization.feature](homepage-personalization.feature) | EP-05 | US-0501 to US-0503 | 14 | Must / Should | 2–3 |
 | [notification-engine.feature](notification-engine.feature) | EP-06 | US-0601 to US-0604 | 21 | Must / Should | 1–3 |
+| [engagement-scoring.feature](engagement-scoring.feature) | EP-09 | US-0901, US-0903 | 7 | Should | 2 |
+| [preference-signals.feature](preference-signals.feature) | EP-09 | US-0902 | 7 | Should | 2 |
+| [notification-scenarios.feature](notification-scenarios.feature) | EP-09 | US-0904, US-0905 | 11 | Should | 2 |
 
-**Total scenarios: 87**
+**Total scenarios: ~112** (EP-09 added in Phase 2 — two-axis model, ADR-0008)
 
 ---
 

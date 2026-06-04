@@ -64,6 +64,15 @@ const userPreferenceSchema = new mongoose.Schema({
   avgTripDuration:    { type: Number, default: 3 },
   prefersDomestic:    { type: Boolean, default: true },
   preferredCabin:     { type: String, default: 'economy' },
+
+  // ── Derived preference signals (EP-02 / EP-09) ─────────────────────────────
+  // When the user likes to fly (time-of-day buckets) and their fare/baggage and
+  // price posture. Used by ranking (EP-07) and the notification matrix (EP-06).
+  departureTimePreference: { type: String, default: null }, // dominant departure bucket
+  arrivalTimePreference:   { type: String, default: null },
+  baggagePreference:       { type: String, enum: ['light', 'standard', 'heavy', null], default: null },
+  prefersRefundable:       { type: Boolean, default: false },
+  priceSensitivity:        { type: String, enum: ['budget', 'mid', 'premium', 'unknown'], default: 'unknown' },
   totalSearches:      { type: Number, default: 0 },
   totalViews:         { type: Number, default: 0 },
   totalBookings:      { type: Number, default: 0 },

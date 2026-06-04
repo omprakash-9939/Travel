@@ -158,17 +158,63 @@ try {
 ```
 flight_search:      5 pts
 hotel_search:       5 pts
-flight_view:       10 pts
-hotel_view:        10 pts
+flight_view:        3 pts   # lowered 10→3 in discovery; a view is a weak signal (US-0302)
+hotel_view:         3 pts
 return_visit:      15 pts
 booking_started:   25 pts
-booking_completed: 50 pts
+booking_completed: 50 pts   # see reset rule below
 wishlist_added:     5 pts
 repeat_search_bonus: +10 (same dest, 7-day window)
 ```
 
 **Tier thresholds:** low < 31, medium 31–70, high ≥ 71
 *(Engineering estimates — calibrate from EP-08 US-0803 tier accuracy data after 30 days)*
+
+**Post-booking reset (US-0303 / US-0603, RC-5):** on `booking_completed` for an
+existing user the accumulated score is reset to `0` (tier → low) and a
+`bookingCooldowns: [{ destination, bookedAt }]` entry is written on
+`UserIntentScore`. While a destination is in cool-down (7 days) the notification
+engine suppresses all nudges for it. A brand-new user whose first-ever event is a
+completed booking has no accumulated score to reset, so the 50-pt weight applies.
+
+**Cabin default (US-0103, RC-8):** `flight_view` always carries a `cabin`
+(defaults to `economy`) so the cabin-preference profile stays reliable.
+
+---
+
+## Engagement axis & scenario matrix (EP-09 — see ADR-0008)
+
+Intent (purchase readiness) and **engagement** (involvement) are tracked as two
+axes on `UserIntentScore`. Engagement (`engagementScore`/`engagementTier`,
+`sessionStats`, `trajectory`) is computed by `services/engagementEngine.js` from
+sessions, dwell, breadth, return cadence and wishlist activity over 30 days, and
+recomputed in the aggregation job. Intent is **time-decayed** there too
+(7-day half-life) and labelled with a cross-session `trajectory`
+(`rising`/`stalled`/`falling`/`post-booking`/`new`).
+
+Notifications are chosen by `services/notificationEngine.js` from the
+Intent × Engagement matrix + trajectory overrides:
+
+```
+                engagement low   engagement medium   engagement high
+intent high     decisive_nudge   closing             closing
+intent medium   reengage         standard_recs       guided
+intent low      dormant(silent)  inspire             inspire
+overrides: post-booking → suppressed; falling (non-high) → reengage
+```
+
+Copy comes from Claude when `ENABLE_LLM_COPY=true` + `ANTHROPIC_API_KEY` set
+(`services/claudeClient.js`, prompt-cached), else deterministic templates.
+
+**New preference signals (EP-09):** `departureTimePreference`,
+`arrivalTimePreference`, `baggagePreference`, `prefersRefundable`,
+`priceSensitivity` on `UserPreference`, derived in `preferenceEngine` from new
+`UserActivity.metadata` fields (`departureHour`/`arrivalHour`/`*Bucket`,
+`baggage`, `refundable`) populated by the flight-view route.
+
+**Validate:** `npm run simulate:personalization` (no DB) and
+`npm run seed:personalization` (writes demo users). Endpoint:
+`GET /api/personalization/scenario`.
 
 ---
 
@@ -184,7 +230,7 @@ repeat_search_bonus: +10 (same dest, 7-day window)
 ## Security requirements (enforce in every PR)
 
 1. All personalization DB queries include `{ user: req.user.id }` — never from request body
-2. `eventType` on POST /track must be validated as an enum (express-validator)
+2. `eventType` on POST /track is whitelisted to client-reportable events only — `booking_started`, `booking_completed` and `return_visit` are server-derived and rejected (US-0301/US-0104, RC-4)
 3. Admin routes enforce `role === 'admin'` check in middleware
 4. `ENABLE_PRICE_DROP_NOTIFICATIONS` must be `false` in production until Amadeus live feed
 5. `ENABLE_REENGAGEMENT_EMAILS` must be `false` until EP-08 US-0803 validates tier accuracy

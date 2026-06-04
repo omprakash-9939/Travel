@@ -24,7 +24,8 @@ architecture/
     ├── ADR-0004-decouple-return-reminder-from-batch.md
     ├── ADR-0005-deterministic-ab-assignment.md
     ├── ADR-0006-feature-flags-via-env.md
-    └── ADR-0007-structured-console-observability.md
+    ├── ADR-0007-structured-console-observability.md
+    └── ADR-0008-separate-engagement-from-intent.md   ← two-axis model (EP-09)
 ```
 
 ## Quick orientation

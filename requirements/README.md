@@ -1,7 +1,7 @@
 # Requirements Index — DataArt Travel Personalization
 
 **Project:** DataArt Travel — AI Personalization Engine  
-**Status:** Discovery → Breakdown complete  
+**Status:** Discovery → Breakdown complete → **Phase 1 implementation underway**  
 **Last updated:** 2026-06-04
 
 ---
@@ -54,12 +54,18 @@ requirements/
 │   │   ├── US-0701-intent-ranked-ordering.md
 │   │   ├── US-0702-recency-decay-preference-scoring.md
 │   │   └── US-0703-ab-test-framework.md
-│   └── EP-08/
-│       ├── US-0801-notification-ctr-tracking.md
-│       ├── US-0802-recommendation-click-tracking.md
-│       ├── US-0803-intent-tier-accuracy-logging.md
-│       ├── US-0804-aggregation-job-monitoring.md
-│       └── US-0805-admin-tooling-intent-notifications.md
+│   ├── EP-08/
+│   │   ├── US-0801-notification-ctr-tracking.md
+│   │   ├── US-0802-recommendation-click-tracking.md
+│   │   ├── US-0803-intent-tier-accuracy-logging.md
+│   │   ├── US-0804-aggregation-job-monitoring.md
+│   │   └── US-0805-admin-tooling-intent-notifications.md
+│   └── EP-09/                               ← NEW (two-axis model, ADR-0008)
+│       ├── US-0901-engagement-score-and-tiers.md
+│       ├── US-0902-derived-preference-signals.md
+│       ├── US-0903-intent-decay-and-trajectory.md
+│       ├── US-0904-scenario-matrix.md
+│       └── US-0905-scenario-simulation-harness.md
 └── functions/
     ├── US-0103/  FN-010301-add-cabin-to-flight-view-metadata.md
     ├── US-0104/  FN-010401-remove-frontend-booking-tracking.md
@@ -86,6 +92,37 @@ requirements/
 | EP-06 | Personalized Notifications | US-0601 to US-0604 | Must/Should | 1–3 |
 | EP-07 | Ranking System | US-0701 to US-0703 | Must/Should/Could | 2–4 |
 | EP-08 | Analytics and Monitoring | US-0801 to US-0805 | Must/Should/Could | 2–3 |
+| EP-09 | Engagement Axis & Notification Scenarios | US-0901 to US-0905 | Should | 2 |
+
+---
+
+## Build status (as implemented)
+
+Reconciled with code on 2026-06-04. Test baseline moved from 17 → 2 failing
+(`backend/__tests__`).
+
+| Story | Status | Notes |
+|-------|--------|-------|
+| US-0101/0102/0106 | ✅ Built | search + wishlist tracking |
+| US-0103 | ✅ Built | cabin defaults to `economy` (tracker + frontend) |
+| US-0104 | 🟡 Built (partial) | `/track` whitelist + DB-backed idempotency; 2 in-process double-call unit scenarios stay RED by test design |
+| US-0105 | ✅ Built | cross-session `return_visit` |
+| US-0301 | ✅ Built | `/track` rejects server-authoritative events |
+| US-0302 | ✅ Built | weights aligned to spec (`flight_view`/`hotel_view` = 3) |
+| US-0303 | ✅ Built | score reset to 0 + `bookingCooldowns` on `booking_completed` |
+| US-0304 | ✅ Built | origin no longer used as planning destination |
+| US-0601 | ✅ Built | `price_drop` gated behind `ENABLE_PRICE_DROP_NOTIFICATIONS` (default off) |
+| US-0603 | ✅ Built | notifications suppressed for booked destinations (7-day cool-down) |
+| US-0401 | 🟡 In progress | cold-start fallback on build failure done; intent-first queries → Phase 3 |
+| US-0403 | 🟡 In progress | `sentNotifications` write fault-isolated; real-time path → Phase 3 |
+| EP-09 (Engagement axis) | ⏳ Phase 2 | new epic — engagement scoring, time-of-day/baggage/price signals, scenario matrix, simulation |
+
+**Known RED (by design):** the two `US-0104` "called twice → one record"
+integration scenarios share `bookingId: 'bk-001'` with green single-call tests in
+the same Jest process. Any stateful in-process dedup would regress the green
+tests; the always-null `findOne` mock hides the production DB idempotency. Real
+double-counting is prevented by DB persistence + the `/track` whitelist + a single
+server-side tracking call in `routes/bookings.js`.
 
 ---
 

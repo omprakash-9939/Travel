@@ -4,7 +4,7 @@ title: Decouple notification generation from preference aggregation batch
 epic: EP-04
 owner: TBD
 reviewer: TBD
-status: Draft
+status: In progress (Phase 1) — sentNotifications write fault-isolated; real-time path lands in Phase 3
 priority: Should
 wireframe: n/a (backend architecture change)
 feature_file: pending

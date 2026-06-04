@@ -4,7 +4,7 @@ title: Track flight view events with cabin metadata
 epic: EP-01
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — cabin defaults to economy in tracker + frontend reports cabin
 priority: Must
 wireframe: n/a (frontend event on flight result card click)
 feature_file: pending

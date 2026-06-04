@@ -95,14 +95,15 @@ export const PersonalizationProvider = ({ children }) => {
   const trackHotelSearch = useCallback((query) =>
     track('hotel_search', { destination: query.city, searchQuery: query }), [track]);
 
-  const trackFlightView = useCallback((flight) =>
+  const trackFlightView = useCallback((flight, cabin = 'economy') =>
     track('flight_view', {
       flightId:     flight._id,
       flightNumber: flight.flightNumber,
       airline:      flight.airline?.name,
       origin:       flight.origin?.city,
       destination:  flight.destination?.city,
-      price:        flight.cabins?.economy?.price,
+      price:        flight.cabins?.[cabin]?.price ?? flight.cabins?.economy?.price,
+      cabin,                            // US-0103 (RC-8): always report the cabin viewed
       isDomestic:   flight.isDomestic
     }), [track]);
 

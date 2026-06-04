@@ -4,7 +4,7 @@ title: Fix origin-as-destination in metadata extraction
 epic: EP-03
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — origin removed as planning-destination fallback
 priority: Must
 wireframe: n/a (backend metadata extraction fix)
 feature_file: pending
