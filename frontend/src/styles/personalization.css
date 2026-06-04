@@ -1,0 +1,416 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   personalization.css — styles for the personalization engine UI
+   Follows the existing design system: CSS vars from global.css
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+.p13n-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
+.p13n-section {}
+
+.p13n-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.p13n-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary);
+}
+
+.p13n-section-title svg { color: var(--accent2); flex-shrink: 0; }
+
+.p13n-section-title h2 {
+  font-size: 22px;
+  font-family: var(--font-head);
+  color: var(--primary);
+  margin: 0;
+}
+
+.p13n-badge {
+  background: linear-gradient(135deg, var(--primary-light), var(--accent2));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Intent strip ────────────────────────────────────────────────────────── */
+.p13n-intent-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  box-shadow: var(--shadow);
+}
+
+.p13n-intent-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.intent-badge {
+  position: relative;
+  background: var(--border);
+  border-radius: 20px;
+  height: 24px;
+  width: 180px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.intent-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--intent-color, var(--primary-light));
+  border-radius: 20px;
+  transition: width 0.8s ease;
+  opacity: 0.3;
+}
+
+.intent-badge span {
+  position: relative;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  z-index: 1;
+}
+
+/* ── Notification banner ─────────────────────────────────────────────────── */
+.p13n-notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(27,58,92,0.06), rgba(232,69,69,0.06));
+  border: 1px solid rgba(27,58,92,0.15);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.p13n-notif-icon { color: var(--primary); margin-top: 2px; flex-shrink: 0; }
+
+.p13n-notif-body { flex: 1; }
+.p13n-notif-body strong { font-size: 14px; color: var(--text); }
+.p13n-notif-body p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+.p13n-notif-cta {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.p13n-notif-cta:hover { background: var(--primary-dark); }
+
+.p13n-notif-dismiss {
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.p13n-notif-dismiss:hover { color: var(--accent); }
+
+/* ── Continue Planning ───────────────────────────────────────────────────── */
+.p13n-continue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.p13n-continue-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.p13n-continue-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.p13n-continue-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.p13n-continue-info { flex: 1; }
+.p13n-continue-dest { font-size: 15px; font-weight: 700; color: var(--text); }
+.p13n-continue-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.p13n-continue-arrow { color: var(--text-muted); }
+
+/* ── Card grid ───────────────────────────────────────────────────────────── */
+.p13n-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* ── Shared card styles ──────────────────────────────────────────────────── */
+.p13n-flight-card,
+.p13n-hotel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: var(--shadow);
+}
+.p13n-flight-card:hover,
+.p13n-hotel-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--primary-light);
+}
+
+.p13n-card-img {
+  position: relative;
+  height: 130px;
+  background-size: cover;
+  background-position: center;
+}
+
+.p13n-wishlist-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+  transition: all 0.2s;
+}
+.p13n-wishlist-btn:hover,
+.p13n-wishlist-btn.active { background: var(--accent); color: #fff; }
+
+.p13n-card-reason {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 16px 10px 8px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.p13n-card-body { padding: 12px 14px; }
+
+.p13n-card-route {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.p13n-route-arrow { color: var(--primary-light); }
+
+.p13n-card-airline {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.p13n-card-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.p13n-card-city {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.p13n-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.p13n-card-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary);
+}
+.p13n-card-price span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.p13n-card-date,
+.p13n-card-stars {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.p13n-rating {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* ── Destination grid ────────────────────────────────────────────────────── */
+.p13n-dest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.p13n-dest-card {
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: var(--shadow);
+}
+.p13n-dest-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+.p13n-dest-img {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.p13n-dest-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 30%, rgba(0,0,0,0.8));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px;
+  color: #fff;
+}
+
+.p13n-dest-type {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  background: rgba(255,255,255,0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.p13n-dest-name  { font-size: 16px; font-weight: 800; font-family: var(--font-head); }
+.p13n-dest-country { font-size: 11px; opacity: 0.75; }
+
+/* ── Recently viewed ─────────────────────────────────────────────────────── */
+.p13n-rv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.p13n-rv-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.p13n-rv-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow);
+}
+
+.p13n-rv-icon { color: var(--primary); flex-shrink: 0; }
+.p13n-rv-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.p13n-rv-sub   { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Dark mode overrides ─────────────────────────────────────────────────── */
+[data-theme="dark"] .p13n-notification {
+  background: rgba(27,58,92,0.15);
+  border-color: rgba(42,82,152,0.3);
+}
+[data-theme="dark"] .p13n-wishlist-btn {
+  background: rgba(21,31,50,0.9);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .p13n-cards-grid { grid-template-columns: repeat(2, 1fr); }
+  .p13n-dest-grid  { grid-template-columns: repeat(2, 1fr); }
+  .p13n-rv-grid    { grid-template-columns: 1fr; }
+  .p13n-section-title h2 { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .p13n-cards-grid { grid-template-columns: 1fr; }
+  .p13n-dest-grid  { grid-template-columns: repeat(2, 1fr); }
+  .intent-badge    { width: 140px; }
+}
