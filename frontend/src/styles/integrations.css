@@ -1,0 +1,21 @@
+.integrations-page h1 { font-family: var(--font-head); color: var(--primary); margin-bottom: 8px; }
+.integration-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+.integration-card { padding: 20px; }
+.integration-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.integration-header h3 { text-transform: capitalize; font-size: 18px; }
+.icon-ok { color: #059669; }
+.icon-off { color: var(--text-muted); }
+.integration-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--primary-light); }
+
+.payment-methods { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.payment-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+}
+.payment-option.selected { border-color: var(--primary); background: rgba(27, 58, 92, 0.06); }
+.payment-option input { accent-color: var(--primary); }
+
+.hotel-extras { margin-top: 16px; }
+.hotel-map-img { width: 100%; border-radius: 12px; margin-top: 12px; }
+.attraction-list { list-style: none; margin-top: 12px; }
+.attraction-list li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }

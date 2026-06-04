@@ -1,0 +1,27 @@
+/* Flights page styles are in auth.css (combined for smaller projects) */
+/* This file is a placeholder - extend with additional flight-specific styles */
+
+.flight-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-nonstop { background: #d1fae5; color: #065f46; }
+.badge-onestop { background: #fef3c7; color: #92400e; }
+.badge-refundable { background: #dbeafe; color: #1e40af; }
+
+.data-source-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  display: inline-block;
+}
+.source-amadeus { background: #d1fae5; color: #065f46; }
+.source-mongodb { background: #dbeafe; color: #1e40af; }
+.source-demo { background: #fef3c7; color: #92400e; }
+.search-hint { font-size: 13px; color: var(--text-muted); margin-top: 6px; }

@@ -1,0 +1,47 @@
+.ai-hub-header { margin-bottom: 24px; }
+.ai-hub-header h1 { font-size: 32px; color: var(--primary); }
+.ai-hub-header p { color: var(--text-muted); margin-top: 8px; }
+.dest-input { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; max-width: 240px; font-weight: 600; font-size: 13px; }
+.dest-input input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); }
+
+.ai-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.ai-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.ai-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.ai-panel { padding: 24px; min-height: 400px; }
+.ai-summary { font-size: 16px; margin-bottom: 16px; padding: 12px; background: rgba(27, 58, 92, 0.08); border-radius: 8px; }
+
+.score-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.score-card { padding: 12px 16px; border-radius: 10px; font-weight: 700; background: var(--bg); border: 1px solid var(--border); }
+.score-card.risk { border-color: var(--accent); color: var(--accent); }
+.score-card.safe { border-color: #059669; color: #059669; }
+
+.chat-panel { display: flex; flex-direction: column; height: 420px; }
+.chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+.chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+.chat-bubble.user { align-self: flex-end; background: var(--primary); color: white; }
+.chat-bubble.assistant { align-self: flex-start; background: var(--bg); border: 1px solid var(--border); }
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input-row input { flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); }
+
+.geo-card, .itin-day { padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); }
+.budget-list { margin-top: 16px; line-height: 2; }
+.weather-week { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 16px; }
+.weather-day { padding: 10px; border-radius: 8px; background: var(--bg); font-size: 13px; text-align: center; }

@@ -1,0 +1,215 @@
+/* ── Auth Pages ───────────────────────────────────── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  padding-top: 60px;
+}
+
+.auth-left {
+  flex: 1;
+  background: linear-gradient(135deg, #0f2640 0%, #1B3A5C 50%, #2a5298 100%);
+  color: white;
+  padding: 60px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-brand { display: flex; align-items: center; gap: 12px; font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 40px; }
+.auth-brand span { color: #FFD700; }
+.auth-left h2 { font-size: 36px; font-weight: 800; margin-bottom: 12px; }
+.auth-left p { opacity: 0.8; line-height: 1.7; margin-bottom: 32px; font-size: 15px; }
+
+.auth-benefits { display: flex; flex-direction: column; gap: 12px; }
+.auth-benefit { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 500; }
+
+.auth-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: var(--bg);
+}
+
+.auth-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-md);
+}
+
+.auth-card h2 { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 24px; }
+
+.auth-error {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  color: #c53030;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 700; color: var(--text); }
+.form-group input, .form-group select {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--text);
+  transition: border-color 0.2s;
+  background: white;
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+
+.pass-input-wrap { position: relative; }
+.pass-input-wrap input { width: 100%; padding-right: 44px; }
+.show-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+.forgot-link { font-size: 13px; color: var(--primary-light); font-weight: 600; text-align: right; margin-top: -8px; }
+
+.auth-submit {
+  padding: 13px;
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-head);
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+.auth-submit:hover:not(:disabled) { background: var(--primary-dark); }
+.auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.auth-divider { text-align: center; position: relative; margin: 16px 0; }
+.auth-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid var(--border); }
+.auth-divider span { background: white; padding: 0 12px; font-size: 13px; color: var(--text-muted); position: relative; }
+
+.social-auth { display: flex; gap: 10px; }
+.social-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.2s;
+  background: white;
+}
+.social-btn:hover { background: #f8f9fa; }
+
+.auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-muted); }
+.auth-switch a { color: var(--primary-light); font-weight: 700; }
+.auth-terms { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 12px; }
+.auth-terms a { color: var(--primary-light); }
+
+@media (max-width: 768px) {
+  .auth-left { display: none; }
+  .auth-right { padding: 20px 16px; }
+}
+
+/* ── Flight Search Page ───────────────────────────── */
+.flight-search-page { padding-top: 60px; min-height: 100vh; }
+
+.fsp-header { background: var(--primary); color: white; padding: 16px 20px; }
+.fsp-header .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+.fsp-route { display: flex; align-items: center; gap: 12px; }
+.fsp-city { font-size: 22px; font-weight: 800; font-family: var(--font-head); }
+.fsp-icon { opacity: 0.6; }
+.fsp-meta { font-size: 13px; opacity: 0.7; }
+
+.fsp-sort { display: flex; align-items: center; gap: 8px; }
+.sort-label { font-size: 13px; opacity: 0.7; }
+.sort-btn { padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); background: transparent; transition: all 0.2s; }
+.sort-btn:hover, .sort-active { background: rgba(255,255,255,0.15); color: white; border-color: rgba(255,255,255,0.4); }
+
+.fsp-body { display: flex; gap: 24px; padding: 24px 20px; }
+
+.filters-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid var(--border);
+  height: fit-content;
+}
+
+.filter-section { margin-bottom: 24px; }
+.filter-section h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.filter-option { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); margin-bottom: 8px; cursor: pointer; }
+.filter-option input { accent-color: var(--primary); }
+
+.price-range { width: 100%; accent-color: var(--primary); margin-bottom: 6px; }
+.price-range-label { font-size: 13px; font-weight: 600; color: var(--primary); }
+
+.reset-filters { width: 100%; padding: 8px; background: #f8f9fa; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text-muted); transition: all 0.2s; }
+.reset-filters:hover { color: var(--accent); border-color: var(--accent); }
+
+.flight-results { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.results-count { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+
+.flight-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.flight-card:hover { box-shadow: var(--shadow-md); border-color: rgba(27,58,92,0.2); }
+
+.fc-airline { width: 120px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
+.fc-airline-logo { font-size: 28px; }
+.fc-airline-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.fc-flight-no { font-size: 11px; color: var(--text-muted); }
+
+.fc-times { flex: 1; display: flex; align-items: center; gap: 16px; }
+.fc-time { text-align: center; }
+.fc-hour { font-size: 24px; font-weight: 800; font-family: var(--font-head); color: var(--text); }
+.fc-city { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+.fc-duration { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fc-dur-line { display: flex; align-items: center; width: 100%; gap: 4px; }
+.fc-line { flex: 1; height: 1px; background: var(--border); }
+.fc-stop-dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--accent2); background: white; }
+.fc-dur-text { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.fc-stops-text { font-size: 11px; color: var(--text-light); }
+
+.fc-meta { display: flex; flex-direction: column; gap: 5px; min-width: 100px; }
+.fc-amenity { font-size: 11px; color: var(--text-muted); }
+.fc-seats { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.seats-low { color: var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+.fc-refund { font-size: 11px; color: #15803d; font-weight: 600; }
+.fc-baggage { font-size: 11px; color: var(--text-muted); }
+
+.fc-price-col { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; }
+.fc-price { font-size: 26px; font-weight: 800; color: var(--primary); font-family: var(--font-head); }
+.fc-price-sub { font-size: 11px; color: var(--text-muted); }
+
+.fc-book-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--primary);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.2s;
+  white-space: nowrap;
+  margin-top: 6px;
+}
+.fc-book-btn:hover { background: var(--primary-dark); }
+
+.loading-state, .no-results { text-align: center; padding: 60px; color: var(--text-muted); font-size: 16px; background: white; border-radius: var(--radius); }
