@@ -1,0 +1,25 @@
+# Project context for agents
+
+> Read this before doing any work in this repo.
+
+## What this is
+<One line: the app and its purpose. Source of truth: docs/discovery/<initiative>/requirements.md>
+
+## Before building, read
+- `architecture/build-context.md` — stack, conventions, where things live, patterns to follow/avoid
+- `design-system/README.md` — tokens, components, states, accessibility standard
+- `features/*.feature` — the verified behaviour to build to
+
+## How to build here
+- Build one story/feature at a time against its failing tests; "done" = tests pass (see the `build-implementation` skill).
+- Use the design system's components and states; don't invent one-off UI.
+- Honour the non-functional and security constraints in `architecture/constraints.md` and `architecture/threat-model.md`.
+- Keep commits small and traceable to a story id.
+
+## Run / test
+- Install: `<command>`
+- Run: `<command>`
+- Test: `<command>`
+
+## Conventions
+<lint/format/test/commit — or link CONTRIBUTING.md>
