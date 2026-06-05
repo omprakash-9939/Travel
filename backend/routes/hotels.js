@@ -169,6 +169,7 @@ const { generateFallbackHotels } = require('../services/integrations/hotelFallba
 const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
 // ── Personalization: activity tracker ──────────────────────────────────────
 const tracker = require('../services/activityTracker');
+const { escapeRegExp } = require('../utils/escapeRegExp');
 
 // GET /api/hotels/search
 router.get('/search', optionalAuth, async (req, res) => {
@@ -203,7 +204,7 @@ router.get('/search', optionalAuth, async (req, res) => {
 
     // 2) MongoDB
     if (!hotels.length) {
-      const query = { 'location.city': new RegExp(city, 'i'), isActive: true };
+      const query = { 'location.city': new RegExp(escapeRegExp(city), 'i'), isActive: true };
       if (minStars) query.starRating = { $gte: Number(minStars) };
       if (amenities) {
         const amenityList = amenities.split(',');
