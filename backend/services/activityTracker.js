@@ -26,11 +26,31 @@ const INTENT_WEIGHTS = {
   wishlist_added:      5,
   destination_viewed:  5,
   page_visit:          2,
-  offer_clicked:       3
+  offer_clicked:       3,
+  // Negative signals
+  wishlist_removed:   -5,
+  offer_dismissed:    -2
 };
 
 const REPEAT_SEARCH_BONUS = 10;
 const REPEAT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Intent decays with a 7-day half-life; skip decay when idle < 12 h to avoid
+// penalising mid-session activity bursts (same calibration as engagementEngine).
+const INTENT_HALF_LIFE_DAYS = 7;
+const LAZY_DECAY_THRESHOLD_H = 12;
+
+// Applied when a search targets a different destination than the current
+// primaryPlanningDestination — the user has shifted focus.
+const DESTINATION_PIVOT_PENALTY = 20;
+
+function lazyDecay(score, lastCalculatedAt) {
+  if (!score || !lastCalculatedAt) return score || 0;
+  const hoursIdle = (Date.now() - new Date(lastCalculatedAt).getTime()) / (60 * 60 * 1000);
+  if (hoursIdle < LAZY_DECAY_THRESHOLD_H) return score;
+  const days = hoursIdle / 24;
+  return Math.max(0, Math.round(score * Math.pow(0.5, days / INTENT_HALF_LIFE_DAYS)));
+}
 
 function tierFromScore(score) {
   if (score >= 71) return 'high';
@@ -95,6 +115,12 @@ async function updateIntentScore(userId, eventType, extraPoints = 0, destination
     intent = new UserIntentScore({ user: userId, breakdown: {} });
   }
 
+  // Apply time-decay before crediting new points so idle periods reduce the score
+  // even when the user eventually returns.
+  if (!isNew && intent.score > 0) {
+    intent.score = lazyDecay(intent.score, intent.lastCalculatedAt);
+  }
+
   const key = breakdownKey(eventType);
   if (key) {
     intent.breakdown[key] = (intent.breakdown[key] || 0) + 1;
@@ -122,11 +148,23 @@ async function updateIntentScore(userId, eventType, extraPoints = 0, destination
     return intent;
   }
 
+  // Destination pivot: subtract penalty when user shifts to a different destination.
+  // The pivot reduces the old intent before the new search earns its points.
+  const isSearchEvent = ['flight_search', 'hotel_search'].includes(eventType);
+  let pivotPenalty = 0;
+  if (isSearchEvent && destination && intent.primaryPlanningDestination) {
+    const oldDest = intent.primaryPlanningDestination.toLowerCase().trim();
+    const newDest = destination.toLowerCase().trim();
+    if (oldDest !== newDest) {
+      pivotPenalty = DESTINATION_PIVOT_PENALTY;
+    }
+  }
+
   const points = (INTENT_WEIGHTS[eventType] || 0) + extraPoints;
-  intent.score = Math.min(100, (intent.score || 0) + points);
+  intent.score = Math.max(0, Math.min(100, (intent.score || 0) - pivotPenalty + points));
   intent.tier = tierFromScore(intent.score);
 
-  if (destination && ['flight_search', 'hotel_search', 'booking_started'].includes(eventType)) {
+  if (destination && (isSearchEvent || eventType === 'booking_started')) {
     intent.primaryPlanningDestination = destination;
   }
 
