@@ -13,6 +13,7 @@
  */
 
 const UserActivity       = require('../models/UserActivity');
+const UserIntentScore    = require('../models/UserIntentScore');
 const { aggregatePreferences } = require('../services/preferenceEngine');
 const { buildRecommendations } = require('../services/recommendationEngine');
 const engagementEngine   = require('../services/engagementEngine');
@@ -29,15 +30,24 @@ async function runOnce() {
   console.log('[AggregationJob] Starting aggregation cycle...');
 
   try {
-    // Find distinct users who had activity in the last 24 hours
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const activeUsers = await UserActivity.distinct('user', { createdAt: { $gte: since } });
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    console.log(`[AggregationJob] Processing ${activeUsers.length} active users`);
+    // Recently active users (standard path)
+    const activeUsers = await UserActivity.distinct('user', { createdAt: { $gte: since24h } });
+
+    // Dormant users whose intent score hasn't been decayed recently — they never
+    // show up in the activity query but still need their score to decay over time.
+    const dormantUsers = await UserIntentScore.distinct('user', {
+      score: { $gt: 0 },
+      lastCalculatedAt: { $lt: since24h }
+    });
+
+    const allUserIds = [...new Set([...activeUsers.map(String), ...dormantUsers.map(String)])];
+    console.log(`[AggregationJob] Processing ${allUserIds.length} users (${activeUsers.length} active, ${dormantUsers.length} dormant)`);
 
     // Process in batches to avoid overwhelming the DB
-    for (let i = 0; i < activeUsers.length; i += BATCH_SIZE) {
-      const batch = activeUsers.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < allUserIds.length; i += BATCH_SIZE) {
+      const batch = allUserIds.slice(i, i + BATCH_SIZE);
       await Promise.allSettled(batch.map(async userId => {
         try {
           await aggregatePreferences(userId);
