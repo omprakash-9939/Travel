@@ -6,6 +6,7 @@ import { ChevronDown, LogOut, BookOpen, Settings, Wallet, Menu, X, Moon, Sun, Sp
 import { useTheme } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
 import '../styles/navbar.css';
+import Logo from './Logo';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -43,7 +44,9 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-inner">
-        <Link to="/" className="nav-logo">DataArt<span>Travel</span></Link>
+        <Link to="/" className="nav-logo">
+        <Logo/>
+        </Link>
 
         <div className={`nav-links ${menuOpen ? 'nav-links-open' : ''}`}>
           {navLinks.map(link => (

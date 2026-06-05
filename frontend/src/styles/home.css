@@ -653,7 +653,7 @@
   padding-bottom: 40px;
 }
 
-.footer-logo { font-family: var(--font-head); font-size: 26px; font-weight: 800; color: white; margin-bottom: 12px; }
+.footer-logo { font-family: var(--font-head); font-size: 26px; font-weight: 800; color: white; margin-bottom: 12px;}
 .footer-logo span { color: var(--gold); }
 .footer-desc { font-size: 13px; line-height: 1.7; margin-bottom: 16px; opacity: 0.7; }
 
