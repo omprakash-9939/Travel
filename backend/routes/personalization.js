@@ -14,6 +14,7 @@
  *  POST  /wishlist                   — add to wishlist
  *  DELETE /wishlist/:itemId          — remove from wishlist
  *  POST  /preferences/refresh        — manually trigger re-aggregation
+ *  GET   /activities                 — recent UserActivity rows (debug read-back)
  */
 
 const express= require('express');
@@ -26,6 +27,7 @@ const notificationEngine = require('../services/notificationEngine');
 const UserPreference      = require('../models/UserPreference');
 const UserIntentScore     = require('../models/UserIntentScore');
 const RecommendationCache = require('../models/RecommendationCache');
+const UserActivity = require('../models/UserActivity');
 
 // Events the client is allowed to report. Booking lifecycle + return_visit are
 // derived server-side (bookings.js / activityTracker) — accepting them from the
@@ -197,6 +199,32 @@ router.post('/preferences/refresh', protect, async (req, res) => {
     await invalidateCache(req.user._id);
     const cache = await getRecommendations(req.user._id);
     res.json({ success: true, preferences: prefs, recommendations: cache });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ── GET /api/personalization/activities ─────────────────────────────────────
+// Dev/debug read-back of persisted events (own user only).
+router.get('/activities', protect, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 15, 50);
+    const activities = await UserActivity.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('eventType metadata sessionId intentPoints createdAt')
+      .lean();
+    res.json({
+      success: true,
+      activities: activities.map(a => ({
+        at: a.createdAt,
+        eventType: a.eventType,
+        metadata: a.metadata || {},
+        sessionId: a.sessionId,
+        intentPoints: a.intentPoints ?? 0,
+        source: 'server'
+      }))
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

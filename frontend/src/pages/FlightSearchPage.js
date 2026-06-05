@@ -12,7 +12,7 @@ export default function FlightSearchPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { trackFlightView, trackBookingStart } = usePersonalization();
+  const { trackFlightView } = usePersonalization();
   const [flights, setFlights] = useState([]);
   const [apiFilters, setApiFilters] = useState({ airlines: [], priceRange: {} });
   const [loading, setLoading] = useState(true);
@@ -90,7 +90,6 @@ export default function FlightSearchPage() {
   const bookFlight = (flight) => {
     if (user) {
       trackFlightView(flight);
-      trackBookingStart(flight, 'flight');
     }
     const price = (flight.cabins?.[cabinKey]?.price ?? flight.cabins?.economy?.price) * adults;
     navigate('/checkout', {

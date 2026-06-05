@@ -11,7 +11,7 @@ export default function HotelSearchPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { trackHotelView, trackBookingStart } = usePersonalization();
+  const { trackHotelView } = usePersonalization();
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [city, setCity] = useState(searchParams.get('city') || 'Goa');
@@ -119,7 +119,6 @@ export default function HotelSearchPage() {
                       onClick={() => {
                         if (user) {
                           trackHotelView(h);
-                          trackBookingStart(h, 'hotel');
                         }
                         navigate('/checkout', {
                         state: {

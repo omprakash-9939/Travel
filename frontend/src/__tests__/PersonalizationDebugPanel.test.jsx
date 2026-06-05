@@ -1,11 +1,12 @@
 /**
  * Component test — PersonalizationDebugPanel
  * Verifies the panel renders nothing when P13N_DEBUG is disabled.
- */
+*/
 
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import PersonalizationDebugPanel from '../components/PersonalizationDebugPanel';
 
 jest.mock('../config/personalizationDebug', () => ({ P13N_DEBUG: false }));
 
@@ -19,7 +20,6 @@ jest.mock('../context/AuthContext', () => ({
 const { usePersonalization } = require('../context/PersonalizationContext');
 const { useAuth }            = require('../context/AuthContext');
 
-import PersonalizationDebugPanel from '../components/PersonalizationDebugPanel';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -28,9 +28,8 @@ beforeEach(() => {
     scenario: null,
     intentScore: { score: 0, tier: 'low' },
     notifications: [],
-    debugLog: [],
+    recentActivities: [],
     sessionId: 'sess_1',
-    clearDebugLog: jest.fn(),
     refreshPersonalization: jest.fn()
   });
 });

@@ -10,7 +10,7 @@ export default function BookingCheckoutPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { format } = useCurrency();
-  const { trackBookingComplete } = usePersonalization();
+  const { fetchAll } = usePersonalization();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('wallet');
@@ -117,7 +117,7 @@ export default function BookingCheckoutPage() {
                 transactionId: response.razorpay_payment_id,
                 method: 'razorpay'
               });
-              trackBookingComplete(item, type);
+              await fetchAll();
               navigate('/bookings', { state: { booked: data.booking?.bookingId } });
             } catch (err) {
               setError(err.response?.data?.message || 'Payment verification failed');
@@ -143,7 +143,7 @@ export default function BookingCheckoutPage() {
       }
 
       const data = await completeBooking();
-      trackBookingComplete(item, type);
+      await fetchAll();
       navigate('/bookings', { state: { booked: data.booking?.bookingId } });
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed');
