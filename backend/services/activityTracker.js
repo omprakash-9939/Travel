@@ -6,6 +6,7 @@
 
 const UserActivity = require('../models/UserActivity');
 const UserIntentScore = require('../models/UserIntentScore');
+const { escapeRegExp } = require('../utils/escapeRegExp');
 
 /**
  * Points per event type (spec weights).
@@ -63,7 +64,7 @@ async function isRepeatSearch(userId, eventType, metadata) {
   const prior = await UserActivity.findOne({
     user: userId,
     eventType,
-    'metadata.destination': new RegExp(`^${dest}$`, 'i'),
+    'metadata.destination': new RegExp(`^${escapeRegExp(dest)}$`, 'i'),
     createdAt: { $gte: since }
   }).lean();
   return Boolean(prior);

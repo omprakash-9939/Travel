@@ -15,6 +15,7 @@ const UserActivity = require('../models/UserActivity');
 const { aggregatePreferences } = require('./preferenceEngine');
 const notificationEngine = require('./notificationEngine');
 const { TRENDING } = require('./ai/destinationData');
+const { escapeRegExp } = require('../utils/escapeRegExp');
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
@@ -240,9 +241,12 @@ function buildNotifications(prefs, intent) {
   }
 
   const beachFav = prefs?.favoriteDestinations?.find(d => BEACH_DESTINATIONS.has(d.destination));
+  // When only the Resort hotel-category triggers this notification (beachFav is undefined),
+  // fall back to the user's primary planning destination for the cooldown check.
+  const sellingFastCooldownDest = beachFav?.destination || dest;
   if (
     (beachFav || prefs?.preferredHotelCategories?.some(c => c.category === 'Resort')) &&
-    !inBookingCooldown(intent, beachFav?.destination) &&
+    !inBookingCooldown(intent, sellingFastCooldownDest) &&
     !recentlySent(intent, 'selling_fast')
   ) {
     notifications.push({
@@ -350,7 +354,7 @@ async function buildRecommendationsInner(userId) {
     status: { $ne: 'cancelled' }
   };
   if (searchDests.length) {
-    flightQuery['destination.city'] = { $in: searchDests.map(d => new RegExp(d, 'i')) };
+    flightQuery['destination.city'] = { $in: searchDests.map(d => new RegExp(escapeRegExp(d), 'i')) };
   }
 
   const flights = await Flight.find(flightQuery).limit(40).lean();
@@ -377,7 +381,7 @@ async function buildRecommendationsInner(userId) {
 
   const hotelCities = searchDests;
   const hotels = await Hotel.find({
-    'location.city': { $in: hotelCities.map(c => new RegExp(c, 'i')) },
+    'location.city': { $in: hotelCities.map(c => new RegExp(escapeRegExp(c), 'i')) },
     isActive: true
   }).limit(30).lean();
 
@@ -416,8 +420,15 @@ async function buildRecommendationsInner(userId) {
   // EP-06: the Intent × Engagement scenario matrix picks the primary nudge.
   // It is silent for dormant/post-booking/cooled-down users.
   const scenario = notificationEngine.selectScenario(intent);
-  const scenarioNotif = await notificationEngine.buildScenarioNotification(prefs, intent);
-  if (scenarioNotif) {
+  // Guard: only build and insert the scenario notification if the same type has not
+  // already been sent within the 48-hour resend window. buildScenarioNotification is
+  // async (may call the LLM), so we pre-check with the scenario key to avoid
+  // unnecessary work when the notification would be discarded anyway.
+  const scenarioNotif =
+    !recentlySent(intent, scenario)
+      ? await notificationEngine.buildScenarioNotification(prefs, intent)
+      : null;
+  if (scenarioNotif && !recentlySent(intent, scenarioNotif.type)) {
     notifications.unshift({
       id: String(scenarioNotif.id),
       type: String(scenarioNotif.type),

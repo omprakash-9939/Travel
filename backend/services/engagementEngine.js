@@ -89,8 +89,16 @@ function decayIntent(score, lastActiveAt, now = Date.now()) {
 }
 
 /**
- * Determine cross-session intent trajectory from activity intentPoints in the
- * recent vs prior windows, plus any active booking cool-down.
+ * Determine cross-session intent trajectory from activity intentPoints across
+ * three time windows, plus any active booking cool-down.
+ *
+ * Windows (all relative to `now`):
+ *   recent  0 – 3 days   (RECENT_MS)
+ *   prior   3 – 7 days   (PRIOR_MS boundary)
+ *   older   7 – 30 days  (remainder of the 30-day fetch window)
+ *
+ * The older bucket was previously ignored, causing users who were active 8–30
+ * days ago but dormant since to be classified as 'new' instead of 'falling'.
  */
 function determineTrajectory(activities, intent, now = Date.now()) {
   const cooldownActive = (intent?.bookingCooldowns || []).some(
@@ -99,18 +107,28 @@ function determineTrajectory(activities, intent, now = Date.now()) {
   if (cooldownActive) return 'post-booking';
 
   let recent = 0;
-  let prior = 0;
+  let prior  = 0;
+  let older  = 0;
   for (const a of activities) {
     const age = now - new Date(a.createdAt).getTime();
     const pts = a.intentPoints || 0;
-    if (age <= RECENT_MS) recent += pts;
-    else if (age <= PRIOR_MS) prior += pts;
+    if      (age <= RECENT_MS) recent += pts;
+    else if (age <= PRIOR_MS)  prior  += pts;
+    else                       older  += pts;  // 7–30 day band
   }
 
-  if (recent === 0 && prior === 0) return 'new';
-  if (prior === 0 && recent > 0) return 'rising';
-  if (recent > prior * 1.2) return 'rising';
-  if (recent < prior * 0.6) return 'falling';
+  if (recent === 0 && prior === 0 && older === 0) {
+    // No activity in the full 30-day window. Distinguish between:
+    //   - Genuinely new:   no intent document exists yet (computeAndPersist
+    //                      returns null before calling us, but defensive check).
+    //   - Lapsed user:     intent document exists; they simply haven't visited
+    //                      recently enough to appear in the activity window.
+    return intent ? 'falling' : 'new';
+  }
+  if (recent === 0 && prior === 0) return 'falling';  // only older activity
+  if (prior === 0 && recent > 0)   return 'rising';
+  if (recent > prior * 1.2)        return 'rising';
+  if (recent < prior * 0.6)        return 'falling';
   return 'stalled';
 }
 
@@ -142,8 +160,12 @@ async function computeAndPersist(userId) {
   intent.trajectory = trajectory;
 
   // Time-decay the accumulated intent score (skip if just booked — already reset).
+  // When no activities exist in the 30-day window, stats.lastActiveAt is null.
+  // Fall back to intent.lastCalculatedAt so inactive users still receive decay
+  // rather than being frozen at their old score indefinitely.
   if (trajectory !== 'post-booking') {
-    const decayed = decayIntent(intent.score, stats.lastActiveAt);
+    const decayRef = stats.lastActiveAt || intent.lastCalculatedAt;
+    const decayed = decayIntent(intent.score, decayRef);
     intent.score = decayed;
     intent.tier = tierFromScore(decayed);
   }

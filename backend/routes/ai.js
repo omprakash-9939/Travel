@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, optionalAuth } = require('../middleware/auth');
 const SearchHistory = require('../models/SearchHistory');
 const CommunityReport = require('../models/CommunityReport');
+const { escapeRegExp } = require('../utils/escapeRegExp');
 const FlightAlert = require('../models/FlightAlert');
 const User = require('../models/User');
 const Flight = require('../models/Flight');
@@ -11,7 +12,7 @@ const ai = require('../services/ai');
 
 // Scam & safety
 router.get('/scam/:destination', async (req, res) => {
-  const reports = await CommunityReport.find({ destination: new RegExp(req.params.destination, 'i') }).limit(10);
+  const reports = await CommunityReport.find({ destination: new RegExp(escapeRegExp(req.params.destination), 'i') }).limit(10);
   const intel = ai.getScamIntelligence(req.params.destination);
   res.json({ success: true, intelligence: intel, communityReports: reports });
 });
