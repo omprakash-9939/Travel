@@ -90,6 +90,7 @@ input, select { font-family: var(--font-body); }
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  padding: 20px;
 }
 
 .glass-inline {

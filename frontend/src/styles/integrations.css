@@ -7,10 +7,10 @@
 .icon-off { color: var(--text-muted); }
 .integration-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--primary-light); }
 
-.payment-methods { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.payment-methods { display: flex; flex-direction: column; gap: 8px; margin: 16px 0;}
 .payment-option {
   display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  padding: 12px 14px; border-radius: 8px; cursor: pointer;
 }
 .payment-option.selected { border-color: var(--primary); background: rgba(27, 58, 92, 0.06); }
 .payment-option input { accent-color: var(--primary); }
