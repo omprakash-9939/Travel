@@ -240,6 +240,19 @@ const PersonalizedHomepage = () => {
   if (!hasAny) return null;
 
   const favDest = preferences?.favoriteDestinations?.[0]?.destination;
+  const engagementTier = intentScore.engagementTier || 'low';
+
+  const flightSectionHeading = {
+    low:    'Recommended For You',
+    medium: 'Flights Worth Exploring',
+    high:   'Top Picks for Your Next Trip',
+  }[engagementTier] ?? 'Recommended For You';
+
+  const destSectionHeading = {
+    low:    'Popular Among Similar Travelers',
+    medium: 'Destinations You Might Like',
+    high:   'Destinations Matching Your Travel Style',
+  }[engagementTier] ?? 'Popular Among Similar Travelers';
 
   return (
     <div className="p13n-wrapper">
@@ -281,7 +294,7 @@ const PersonalizedHomepage = () => {
           <div className="p13n-section-header">
             <div className="p13n-section-title">
               <Sparkles size={18} />
-              <h2>Recommended For You</h2>
+              <h2>{flightSectionHeading}</h2>
             </div>
             <span className="p13n-badge">Personalized</span>
           </div>
@@ -316,7 +329,7 @@ const PersonalizedHomepage = () => {
           <div className="p13n-section-header">
             <div className="p13n-section-title">
               <MapPin size={18} />
-              <h2>Popular Among Similar Travelers</h2>
+              <h2>{destSectionHeading}</h2>
             </div>
           </div>
           <div className="p13n-dest-grid">
