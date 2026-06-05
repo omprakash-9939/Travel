@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import api from '../utils/api';
 import { useAuth } from './AuthContext';
+import { P13N_DEBUG } from '../config/personalizationDebug';
+
+const DEBUG_LOG_MAX = 15;
 
 const PersonalizationContext = createContext();
 
@@ -19,6 +22,8 @@ export const PersonalizationProvider = ({ children }) => {
   const [recentlyViewed, setRecentlyViewed]     = useState({ flights: [], hotels: [] });
   const [notifications, setNotifications]       = useState([]);
   const [loading, setLoading]                   = useState(false);
+  const [scenario, setScenario]                 = useState(null);
+  const [debugLog, setDebugLog]                 = useState([]);
 
   // Session ID — constant per browser tab, used for session-level signals
   const sessionIdRef = useRef(
@@ -37,6 +42,7 @@ export const PersonalizationProvider = ({ children }) => {
       setPreferences(null);
       setIntentScore({ score: 0, tier: 'low', breakdown: {} });
       setNotifications([]);
+      setScenario(null);
       return;
     }
     fetchAll();
@@ -47,12 +53,13 @@ export const PersonalizationProvider = ({ children }) => {
     if (!user) return;
     setLoading(true);
     try {
-      const [recsRes, prefsRes, intentRes, recentRes, notifRes] = await Promise.allSettled([
+      const [recsRes, prefsRes, intentRes, recentRes, notifRes, scenarioRes] = await Promise.allSettled([
         api.get('/personalization/recommendations'),
         api.get('/personalization/preferences'),
         api.get('/personalization/intent'),
         api.get('/personalization/recently-viewed'),
-        api.get('/personalization/notifications')
+        api.get('/personalization/notifications'),
+        P13N_DEBUG ? api.get('/personalization/scenario') : Promise.resolve(null)
       ]);
 
       if (recsRes.status === 'fulfilled') {
@@ -71,6 +78,9 @@ export const PersonalizationProvider = ({ children }) => {
         hotels:  recentRes.value.data.hotels  || []
       });
       if (notifRes.status  === 'fulfilled') setNotifications(notifRes.value.data.notifications || []);
+      if (P13N_DEBUG && scenarioRes.status === 'fulfilled' && scenarioRes.value) {
+        setScenario(scenarioRes.value.data);
+      }
     } catch (err) {
       console.warn('[Personalization] fetchAll error:', err.message);
     } finally {
@@ -81,12 +91,20 @@ export const PersonalizationProvider = ({ children }) => {
   // ── Central tracking function ────────────────────────────────────────────
   const track = useCallback(async (eventType, metadata = {}) => {
     if (!user) return;
+    if (P13N_DEBUG) {
+      setDebugLog(prev => [
+        { at: Date.now(), eventType, metadata, sessionId },
+        ...prev
+      ].slice(0, DEBUG_LOG_MAX));
+    }
     try {
       await api.post('/personalization/track', { eventType, metadata, sessionId });
     } catch (err) {
       // Non-critical — silently ignore tracking failures
     }
   }, [user, sessionId]);
+
+  const clearDebugLog = useCallback(() => setDebugLog([]), []);
 
   // ── Tracking shortcuts ───────────────────────────────────────────────────
   const trackFlightSearch = useCallback((query) =>
@@ -158,6 +176,15 @@ export const PersonalizationProvider = ({ children }) => {
     }
   }, []);
 
+  const refreshPersonalization = useCallback(async () => {
+    try {
+      await api.post('/personalization/preferences/refresh');
+    } catch (err) {
+      console.warn('Refresh failed:', err.message);
+    }
+    await fetchAll();
+  }, [fetchAll]);
+
   return (
     <PersonalizationContext.Provider value={{
       // Data
@@ -168,6 +195,8 @@ export const PersonalizationProvider = ({ children }) => {
       notifications,
       loading,
       sessionId,
+      scenario,
+      debugLog,
       // Actions
       track,
       trackFlightSearch,
@@ -180,6 +209,8 @@ export const PersonalizationProvider = ({ children }) => {
       addToWishlist,
       dismissNotification,
       refreshRecommendations,
+      refreshPersonalization,
+      clearDebugLog,
       fetchAll
     }}>
       {children}
