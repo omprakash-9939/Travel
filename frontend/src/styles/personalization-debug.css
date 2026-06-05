@@ -1,0 +1,133 @@
+.p13n-debug {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  color: #e6e6e6;
+  background: #1b1f24;
+  border: 1px solid #333a42;
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+}
+
+.p13n-debug__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background: #23282e;
+  border: none;
+  border-radius: 8px;
+  color: #e6e6e6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.p13n-debug__badge {
+  padding: 2px 8px;
+  background: #2d6cdf;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.p13n-debug__body {
+  max-height: 45vh;
+  overflow-y: auto;
+  padding: 10px 12px;
+}
+
+.p13n-debug__section {
+  margin-bottom: 12px;
+}
+
+.p13n-debug__section-title {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a93a0;
+}
+
+.p13n-debug__chip {
+  display: inline-block;
+  margin: 0 4px 4px 0;
+  padding: 3px 8px;
+  background: #2b333c;
+  border: 1px solid #3a434d;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.p13n-debug__chip strong {
+  color: #6fb1ff;
+}
+
+.p13n-debug__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.p13n-debug__muted {
+  color: #8a93a0;
+}
+
+.p13n-debug__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+}
+
+.p13n-debug__table th,
+.p13n-debug__table td {
+  padding: 3px 6px;
+  text-align: left;
+  border-bottom: 1px solid #2b333c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.p13n-debug__table th {
+  color: #8a93a0;
+  font-weight: 600;
+}
+
+.p13n-debug__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid #2b333c;
+}
+
+.p13n-debug__btn {
+  flex: 1 1 auto;
+  padding: 5px 8px;
+  background: #2b333c;
+  border: 1px solid #3a434d;
+  border-radius: 6px;
+  color: #e6e6e6;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.p13n-debug__btn:hover {
+  background: #36404b;
+}
+
+.p13n-debug__mono {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  color: #b9c2cc;
+}

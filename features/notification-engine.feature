@@ -6,7 +6,9 @@
 #        post-booking cool-down minimum 7 days; SendGrid failure must not crash intent pipeline;
 #        email dedup window 7 days per destination
 # Priority: Must (US-0601, US-0603), Should (US-0602, US-0604)
-# Status: Draft — awaiting verification
+# Status: Partially built (Phase 1) — US-0601 price_drop flag (default OFF) and US-0603
+#         post-booking cool-down suppression implemented and green; buildNotifications
+#         exported. US-0602 real-time path and US-0604 SendGrid re-engagement pending.
 
 @EP-06 @notification-engine
 Feature: Personalised Notification Engine

@@ -4,7 +4,9 @@
 #        real-time notification path must complete within the current HTTP request cycle;
 #        cache TTL to be reviewed after EP-08 hit/miss data (A-5)
 # Priority: Must (US-0401, US-0402), Should (US-0403)
-# Status: Draft — awaiting verification
+# Status: Partially built (Phase 1) — US-0401 cold-start fallback on build failure and
+#         US-0402 cache/TTL behaviour green; US-0403 sentNotifications write is fault-isolated.
+#         Intent-first queries and the real-time notification path land in Phase 3.
 
 @EP-04 @recommendation-engine
 Feature: Recommendation Engine

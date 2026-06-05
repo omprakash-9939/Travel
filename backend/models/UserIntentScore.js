@@ -18,6 +18,26 @@ const userIntentScoreSchema = new mongoose.Schema({
     default: 'low'
   },
 
+  // ── Engagement axis (EP-09) ────────────────────────────────────────────────
+  // Intent measures purchase READINESS; engagement measures INVOLVEMENT
+  // (how active a user is, independent of how close they are to booking).
+  // The two axes together drive the notification scenario matrix (EP-06).
+  engagementScore: { type: Number, default: 0, min: 0, max: 100 },
+  engagementTier:  { type: String, enum: ['low', 'medium', 'high'], default: 'low' },
+  sessionStats: {
+    sessionCount:        { type: Number, default: 0 },
+    avgEventsPerSession: { type: Number, default: 0 },
+    avgTimeOnPage:       { type: Number, default: 0 }, // seconds
+    distinctDestinations:{ type: Number, default: 0 },
+    lastActiveAt:        Date
+  },
+  // Cross-session intent trajectory used by the notification matrix
+  trajectory: {
+    type: String,
+    enum: ['rising', 'stalled', 'falling', 'post-booking', 'new'],
+    default: 'new'
+  },
+
   // Breakdown of how score was accumulated (last 30 days)
   breakdown: {
     searches:          { type: Number, default: 0 },
@@ -31,6 +51,13 @@ const userIntentScoreSchema = new mongoose.Schema({
 
   // The destination the user is most actively planning for
   primaryPlanningDestination: String,
+
+  // Per-destination booking cool-downs (US-0303 / US-0603, RC-5).
+  // After a booking we suppress nudges for that destination for a window.
+  bookingCooldowns: [{
+    destination: String,
+    bookedAt:    Date
+  }],
 
   // Notifications already sent (to avoid spam)
   sentNotifications: [{

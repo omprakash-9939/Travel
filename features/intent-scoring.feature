@@ -4,7 +4,11 @@
 #        tier thresholds (31/71) are engineering hypotheses — validate via EP-08 US-0803 after 30 days (A-2);
 #        intent weights documented as single configuration object
 # Priority: Must
-# Status: Draft — awaiting verification
+# Status: Built (Phase 1) — US-0301 whitelist, US-0302 weights (view=3), US-0303 reset+cooldown,
+#         US-0304 destination extraction all implemented and green. The two in-process
+#         booking double-call scenarios remain RED by test design (shared bookingId across
+#         green single-call tests); real double-counting is prevented by DB idempotency +
+#         the /track whitelist.
 
 @EP-03 @intent-scoring
 Feature: Intent Scoring Engine

@@ -4,7 +4,7 @@ title: Detect cross-session return visits
 epic: EP-01
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — maybeReturnVisit queries across sessions (sessionId $ne current)
 priority: Must
 wireframe: n/a (backend detection logic)
 feature_file: pending

@@ -13,6 +13,7 @@ const UserIntentScore = require('../models/UserIntentScore');
 const RecommendationCache = require('../models/RecommendationCache');
 const UserActivity = require('../models/UserActivity');
 const { aggregatePreferences } = require('./preferenceEngine');
+const notificationEngine = require('./notificationEngine');
 const { TRENDING } = require('./ai/destinationData');
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -172,11 +173,34 @@ async function buildContinuePlanning(userId, prefs) {
 }
 
 const NOTIF_RESEND_WINDOW_MS = 48 * 60 * 60 * 1000; // don't resend same type within 48h
+const BOOKING_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // suppress nudges 7 days post-booking
 
 function recentlySent(intent, type) {
   if (!intent?.sentNotifications?.length) return false;
   const cutoff = Date.now() - NOTIF_RESEND_WINDOW_MS;
   return intent.sentNotifications.some(n => n.type === type && new Date(n.sentAt).getTime() > cutoff);
+}
+
+/**
+ * US-0603 (RC-5): true when the destination was booked within the cool-down
+ * window. We must not nudge a user about a trip they already booked.
+ */
+function inBookingCooldown(intent, destination) {
+  if (!destination || !intent?.bookingCooldowns?.length) return false;
+  const cutoff = Date.now() - BOOKING_COOLDOWN_MS;
+  const d = String(destination).toLowerCase();
+  return intent.bookingCooldowns.some(
+    c => c.destination && String(c.destination).toLowerCase() === d
+      && new Date(c.bookedAt).getTime() > cutoff
+  );
+}
+
+/**
+ * US-0601 (RC-6): price_drop notifications fabricate a discount % and are a
+ * legal/trust risk, so they are OFF unless explicitly enabled via env flag.
+ */
+function priceDropEnabled() {
+  return process.env.ENABLE_PRICE_DROP_NOTIFICATIONS === 'true';
 }
 
 function buildNotifications(prefs, intent) {
@@ -188,6 +212,7 @@ function buildNotifications(prefs, intent) {
     dest &&
     (intent?.breakdown?.repeatSearches >= 1) &&
     (intent?.tier === 'medium' || intent?.tier === 'high') &&
+    !inBookingCooldown(intent, dest) &&
     !recentlySent(intent, 'return_reminder')
   ) {
     notifications.push({
@@ -201,7 +226,7 @@ function buildNotifications(prefs, intent) {
     });
   }
 
-  if (dest && !recentlySent(intent, 'price_drop')) {
+  if (priceDropEnabled() && dest && !inBookingCooldown(intent, dest) && !recentlySent(intent, 'price_drop')) {
     const pct = 5 + Math.floor(Math.random() * 8);
     notifications.push({
       id: `price_drop_${dest}`,
@@ -217,6 +242,7 @@ function buildNotifications(prefs, intent) {
   const beachFav = prefs?.favoriteDestinations?.find(d => BEACH_DESTINATIONS.has(d.destination));
   if (
     (beachFav || prefs?.preferredHotelCategories?.some(c => c.category === 'Resort')) &&
+    !inBookingCooldown(intent, beachFav?.destination) &&
     !recentlySent(intent, 'selling_fast')
   ) {
     notifications.push({
@@ -231,7 +257,7 @@ function buildNotifications(prefs, intent) {
   }
 
   const recentSearch = prefs?.favoriteDestinations?.[1]?.destination || TRENDING[2]?.destination;
-  if (recentSearch && !recentlySent(intent, 'new_deal')) {
+  if (recentSearch && !inBookingCooldown(intent, recentSearch) && !recentlySent(intent, 'new_deal')) {
     notifications.push({
       id: `new_deal_${recentSearch}`,
       type: 'new_deal',
@@ -292,8 +318,20 @@ function buildDestinationCards(prefs, popMap) {
 
 /**
  * Build full recommendation cache for user.
+ *
+ * US-0401 (RC-10): never throws upward — on any failure we degrade to a
+ * cold-start payload so the homepage always has something to render.
  */
 async function buildRecommendations(userId) {
+  try {
+    return await buildRecommendationsInner(userId);
+  } catch (err) {
+    console.error('[RecommendationEngine] build failed, serving cold-start:', err.message);
+    return coldStartPayload();
+  }
+}
+
+async function buildRecommendationsInner(userId) {
   const uid = new mongoose.Types.ObjectId(userId);
 
   let prefs = await UserPreference.findOne({ user: uid }).lean();
@@ -374,6 +412,24 @@ async function buildRecommendations(userId) {
     dismissed: false,
     createdAt: new Date()
   }));
+
+  // EP-06: the Intent × Engagement scenario matrix picks the primary nudge.
+  // It is silent for dormant/post-booking/cooled-down users.
+  const scenario = notificationEngine.selectScenario(intent);
+  const scenarioNotif = await notificationEngine.buildScenarioNotification(prefs, intent);
+  if (scenarioNotif) {
+    notifications.unshift({
+      id: String(scenarioNotif.id),
+      type: String(scenarioNotif.type),
+      title: String(scenarioNotif.title),
+      message: String(scenarioNotif.message),
+      ctaLabel: String(scenarioNotif.ctaLabel || 'View'),
+      ctaUrl: String(scenarioNotif.ctaUrl || '/'),
+      priority: Number(scenarioNotif.priority) || 0,
+      dismissed: false,
+      createdAt: new Date()
+    });
+  }
   const recommendedDestinations = buildDestinationCards(prefs, popMap);
 
   await RecommendationCache.deleteOne({ user: uid });
@@ -385,20 +441,41 @@ async function buildRecommendations(userId) {
     recommendedDestinations,
     continuePlanning,
     notifications,
+    scenario,
     validUntil: new Date(Date.now() + CACHE_TTL_MS),
     builtAt: new Date()
   });
 
-  // Record which notification types were just sent so dedup works on next build
+  // Record which notification types were just sent so dedup works on next build.
+  // US-0403 (RC-2): this bookkeeping must never break the recommendation
+  // pipeline, so a failed write is logged and swallowed.
   if (notifications.length) {
     const newSent = notifications.map(n => ({ type: n.type, sentAt: new Date() }));
-    await UserIntentScore.updateOne(
-      { user: uid },
-      { $push: { sentNotifications: { $each: newSent } } }
-    );
+    try {
+      await UserIntentScore.updateOne(
+        { user: uid },
+        { $push: { sentNotifications: { $each: newSent } } }
+      );
+    } catch (err) {
+      console.error('[RecommendationEngine] sentNotifications update failed:', err.message);
+    }
   }
 
   return formatCachePayload(cache.toObject ? cache.toObject() : cache);
+}
+
+/**
+ * Cold-start payload — used when the user has no history or when a build fails.
+ * Always returns arrays so the UI can render safely.
+ */
+function coldStartPayload() {
+  return {
+    recommendedFlights: [],
+    recommendedHotels: [],
+    recommendedDestinations: buildDestinationCards({}, {}),
+    continuePlanning: [],
+    notifications: []
+  };
 }
 
 function formatCachePayload(cache) {
@@ -409,6 +486,7 @@ function formatCachePayload(cache) {
     recommendedDestinations: cache.recommendedDestinations || [],
     continuePlanning: cache.continuePlanning || [],
     notifications: (cache.notifications || []).filter(n => !n.dismissed),
+    scenario: cache.scenario || null,
     builtAt: cache.builtAt,
     validUntil: cache.validUntil
   };
@@ -444,5 +522,8 @@ module.exports = {
   buildRecommendations,
   invalidateCache,
   rankFlight,
-  rankHotel
+  rankHotel,
+  buildNotifications,
+  inBookingCooldown,
+  priceDropEnabled
 };

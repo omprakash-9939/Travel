@@ -67,6 +67,8 @@ const recommendationCacheSchema = new mongoose.Schema({
   recommendedDestinations:   [destinationCardSchema],
   continuePlanning:        [continuePlanningSchema],
   notifications:           [notificationSchema],
+  // EP-06: the Intent × Engagement scenario this payload was built for
+  scenario:                String,
   validUntil: { type: Date, default: () => new Date(Date.now() + 6 * 60 * 60 * 1000) },
   builtAt:    { type: Date, default: Date.now }
 }, { timestamps: true });

@@ -4,7 +4,7 @@ title: Reset intent score and suppress notifications after booking completion
 epic: EP-03
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — score reset to 0 + bookingCooldowns on booking_completed
 priority: Must
 wireframe: n/a (backend logic; visible effect is absence of notifications)
 feature_file: pending

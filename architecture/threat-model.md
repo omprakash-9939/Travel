@@ -44,7 +44,7 @@
 
 | Threat | Data Flow | Impact | Mitigation | Status |
 |--------|-----------|--------|------------|--------|
-| **Malicious eventType in `/api/personalization/track`** | Browser → activityTracker | Unknown event type silently scores 0 pts (no harm) OR attacker crafts `booking_completed` to trigger cool-down for victim | Express route must validate `eventType` is in the allowed set using `express-validator`. `booking_completed` must only be emitted by the server-side booking service, never accepted from client payload. | **Action required: whitelist eventType on the route** |
+| **Malicious eventType in `/api/personalization/track`** | Browser → activityTracker | Unknown event type silently scores 0 pts (no harm) OR attacker crafts `booking_completed` to trigger cool-down for victim | `POST /track` whitelists client-reportable events (`CLIENT_TRACKABLE_EVENTS`); `booking_started`, `booking_completed` and `return_visit` are server-derived and rejected with 400. Additionally `activityTracker.track()` enforces DB-backed booking idempotency per `bookingId`. | **Mitigated** (routes/personalization.js) |
 | **Inflated metadata values** | Browser → track | Large `metadata` objects could bloat `UserActivity` | Apply max-size validation: `metadata` object ≤ 2 KB. Express body-parser `limit: '10kb'` applied globally. | **Action required: document and test body-parser limit** |
 | **MongoDB injection via metadata fields** | Browser → DB | NOSQL injection via `$where` / operator keys | Mongoose schema types reject operator-keyed objects. Do not use `req.body` directly in `find()`/`findOne()` without going through the schema. Validated in `express-validator` middleware. | Mitigated by Mongoose ODM |
 | **Direct manipulation of RecommendationCache** | — | Not a client-reachable endpoint. `RecommendationCache` is written only by `buildRecommendations()`. | No public write endpoint for the cache. | Mitigated |
@@ -87,8 +87,8 @@
 
 | # | Risk | Likelihood | Impact | Priority |
 |---|------|-----------|--------|---------|
-| 1 | `booking_completed` accepted from client body → fabricated intent reset or cooldown injection | Medium | High | **Fix in Phase 1** — `booking_completed` must be server-only |
-| 2 | Missing eventType whitelist on track endpoint → unknown event types or attempted DoS | Medium | Medium | **Fix in Phase 1** — add `express-validator` enum check |
+| 1 | `booking_completed` accepted from client body → fabricated intent reset or cooldown injection | Medium | High | **Done (Phase 1)** — `booking_completed`/`booking_started`/`return_visit` rejected by the `/track` whitelist; booking events emitted only by the server booking service |
+| 2 | Missing eventType whitelist on track endpoint → unknown event types or attempted DoS | Medium | Medium | **Done (Phase 1)** — `CLIENT_TRACKABLE_EVENTS` whitelist on `POST /track` |
 | 3 | Weak/default JWT_SECRET in production deployment | Low (deployment error) | Critical (total auth bypass) | **Pre-production gate** — enforce entropy check in deployment checklist |
 
 ---
@@ -96,9 +96,9 @@
 ## Security Controls Checklist
 
 - [ ] `JWT_SECRET` is a minimum 256-bit random string (not the default placeholder)
-- [ ] `eventType` is validated as an enum on `POST /api/personalization/track`
+- [x] `eventType` is whitelisted on `POST /api/personalization/track` (client-reportable events only)
 - [ ] `metadata` body size is bounded (≤ 2 KB)
-- [ ] `booking_completed` event can only be emitted by server-side booking service
+- [x] `booking_completed` event can only be emitted by server-side booking service (client `/track` rejects it)
 - [ ] Rate limiting on `/api/personalization/track` (60 req/min per user)
 - [ ] All personalization DB queries include `{ user: userId }` from JWT, never from request body
 - [ ] Admin endpoints enforce `role === 'admin'` check

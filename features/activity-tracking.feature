@@ -2,7 +2,10 @@
 # Wireframe: n/a — backend event capture; no distinct screen
 # NFRs: Event persistence < 200 ms; UserActivity indexed on (user, createdAt) for 90-day queries
 # Priority: Must (US-0101–US-0105), Should (US-0106)
-# Status: Draft — awaiting verification
+# Status: Built (Phase 1) — search/view/wishlist tracking, US-0103 cabin default,
+#         US-0105 cross-session return_visit and US-0304 destination extraction green.
+#         US-0104 booking idempotency is DB-backed + /track whitelist; the two
+#         in-process double-call scenarios stay RED by test design.
 
 @EP-01 @activity-tracking
 Feature: Activity Tracking

@@ -4,7 +4,7 @@ title: Calculate intent score from activity events
 epic: EP-03
 owner: TBD
 reviewer: TBD
-status: Draft
+status: Built (Phase 1) — INTENT_WEIGHTS aligned to spec (flight_view/hotel_view = 3); tiers 31/71
 priority: Must
 wireframe: n/a (backend scoring logic)
 feature_file: pending

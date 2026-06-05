@@ -17,6 +17,8 @@ import { RegisterPage } from './pages/LoginPage';
 import OffersPage from './pages/OffersPage';
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
+import PersonalizationDebugPanel from './components/PersonalizationDebugPanel';
+import { P13N_DEBUG } from './config/personalizationDebug';
 import './styles/global.css';
 
 function App() {
@@ -25,6 +27,7 @@ function App() {
       <CurrencyProvider>
       <AuthProvider>
         <PersonalizationProvider>
+        {P13N_DEBUG && <PersonalizationDebugPanel />}
         <Router>
           <div className="app">
             <Navbar />

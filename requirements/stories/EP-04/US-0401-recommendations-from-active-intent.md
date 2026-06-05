@@ -4,7 +4,7 @@ title: Build recommendations using active planning intent
 epic: EP-04
 owner: TBD
 reviewer: TBD
-status: Draft
+status: In progress (Phase 1) — cold-start fallback on build failure done; intent-first queries land in Phase 3
 priority: Must
 wireframe: n/a (backend recommendation query logic)
 feature_file: pending

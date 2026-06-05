@@ -46,6 +46,13 @@ const userActivitySchema = new mongoose.Schema({
     isDomestic:   Boolean,
     tripDuration: Number,   // days (round-trip)
     flightNumber: String,
+    // Time-of-day + fare signals (EP-02 preference signals / EP-09)
+    departureHour:   Number,   // 0–23, local
+    arrivalHour:     Number,   // 0–23, local
+    departureBucket: String,   // red-eye | early-morning | morning | afternoon | evening | night
+    arrivalBucket:   String,
+    baggage:         String,   // e.g. "15 kg" — fare/baggage preference signal
+    refundable:      Boolean,
 
     // Hotel-specific
     hotelId:      String,
