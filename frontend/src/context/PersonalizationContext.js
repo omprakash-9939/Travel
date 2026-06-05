@@ -3,8 +3,6 @@ import api from '../utils/api';
 import { useAuth } from './AuthContext';
 import { P13N_DEBUG } from '../config/personalizationDebug';
 
-const DEBUG_LOG_MAX = 15;
-
 const PersonalizationContext = createContext();
 
 export const usePersonalization = () => {
@@ -23,7 +21,7 @@ export const PersonalizationProvider = ({ children }) => {
   const [notifications, setNotifications]       = useState([]);
   const [loading, setLoading]                   = useState(false);
   const [scenario, setScenario]                 = useState(null);
-  const [debugLog, setDebugLog]                 = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
 
   // Session ID — constant per browser tab, used for session-level signals
   const sessionIdRef = useRef(
@@ -35,6 +33,26 @@ export const PersonalizationProvider = ({ children }) => {
   );
   const sessionId = sessionIdRef.current;
 
+  const fetchRecentActivities = useCallback(async () => {
+    if (!user || !P13N_DEBUG) return;
+    try {
+      const { data } = await api.get('/personalization/activities', { params: { limit: 15 } });
+      setRecentActivities(data.activities || []);
+    } catch (err) {
+      console.warn('[Personalization] activities fetch failed:', err.message);
+    }
+  }, [user]);
+
+  const refreshDebugState = useCallback(async () => {
+    if (!P13N_DEBUG) return;
+    await Promise.allSettled([
+      fetchRecentActivities(),
+      api.get('/personalization/intent').then(r => setIntentScore(r.data.intent)),
+      api.get('/personalization/scenario').then(r => setScenario(r.data)),
+      api.get('/personalization/notifications').then(r => setNotifications(r.data.notifications || [])),
+    ]);
+  }, [fetchRecentActivities]);
+
   // ── Load personalization data when user logs in ──────────────────────────
   useEffect(() => {
     if (!user) {
@@ -43,6 +61,7 @@ export const PersonalizationProvider = ({ children }) => {
       setIntentScore({ score: 0, tier: 'low', breakdown: {} });
       setNotifications([]);
       setScenario(null);
+      setRecentActivities([]);
       return;
     }
     fetchAll();
@@ -81,30 +100,30 @@ export const PersonalizationProvider = ({ children }) => {
       if (P13N_DEBUG && scenarioRes.status === 'fulfilled' && scenarioRes.value) {
         setScenario(scenarioRes.value.data);
       }
+      if (P13N_DEBUG) {
+        await fetchRecentActivities();
+      }
     } catch (err) {
       console.warn('[Personalization] fetchAll error:', err.message);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchRecentActivities]);
 
   // ── Central tracking function ────────────────────────────────────────────
   const track = useCallback(async (eventType, metadata = {}) => {
     if (!user) return;
-    if (P13N_DEBUG) {
-      setDebugLog(prev => [
-        { at: Date.now(), eventType, metadata, sessionId },
-        ...prev
-      ].slice(0, DEBUG_LOG_MAX));
-    }
     try {
       await api.post('/personalization/track', { eventType, metadata, sessionId });
+      if (P13N_DEBUG) {
+        await refreshDebugState();
+      }
     } catch (err) {
-      // Non-critical — silently ignore tracking failures
+      if (P13N_DEBUG) {
+        console.warn('[Personalization] track failed:', err.response?.data?.message || err.message);
+      }
     }
-  }, [user, sessionId]);
-
-  const clearDebugLog = useCallback(() => setDebugLog([]), []);
+  }, [user, sessionId, refreshDebugState]);
 
   // ── Tracking shortcuts ───────────────────────────────────────────────────
   const trackFlightSearch = useCallback((query) =>
@@ -121,7 +140,7 @@ export const PersonalizationProvider = ({ children }) => {
       origin:       flight.origin?.city,
       destination:  flight.destination?.city,
       price:        flight.cabins?.[cabin]?.price ?? flight.cabins?.economy?.price,
-      cabin,                            // US-0103 (RC-8): always report the cabin viewed
+      cabin,
       isDomestic:   flight.isDomestic
     }), [track]);
 
@@ -133,12 +152,6 @@ export const PersonalizationProvider = ({ children }) => {
       starRating: hotel.starRating,
       price:      hotel.roomTypes?.[0]?.price
     }), [track]);
-
-  const trackBookingStart = useCallback((item, type) =>
-    track('booking_started', { bookingType: type, destination: type === 'flight' ? item.destination?.city : item.location?.city, price: item.totalPrice }), [track]);
-
-  const trackBookingComplete = useCallback((item, type) =>
-    track('booking_completed', { bookingType: type, destination: type === 'flight' ? item.destination?.city : item.location?.city, price: item.totalPrice }), [track]);
 
   const trackDestination = useCallback((name) =>
     track('destination_viewed', { destination: name }), [track]);
@@ -152,7 +165,7 @@ export const PersonalizationProvider = ({ children }) => {
         destination: type === 'flight' ? item.destination?.city : item.location?.city,
         price:       type === 'flight' ? item.cabins?.economy?.price : item.roomTypes?.[0]?.price
       });
-      await fetchAll(); // refresh recommendations
+      await fetchAll();
     } catch (err) {
       console.warn('Wishlist add failed:', err.message);
     }
@@ -187,7 +200,6 @@ export const PersonalizationProvider = ({ children }) => {
 
   return (
     <PersonalizationContext.Provider value={{
-      // Data
       recommendations,
       preferences,
       intentScore,
@@ -196,21 +208,18 @@ export const PersonalizationProvider = ({ children }) => {
       loading,
       sessionId,
       scenario,
-      debugLog,
-      // Actions
+      recentActivities,
       track,
       trackFlightSearch,
       trackHotelSearch,
       trackFlightView,
       trackHotelView,
-      trackBookingStart,
-      trackBookingComplete,
       trackDestination,
       addToWishlist,
       dismissNotification,
       refreshRecommendations,
       refreshPersonalization,
-      clearDebugLog,
+      fetchRecentActivities,
       fetchAll
     }}>
       {children}

@@ -15,9 +15,8 @@ const PersonalizationDebugPanel = () => {
     scenario,
     intentScore,
     notifications,
-    debugLog,
+    recentActivities,
     sessionId,
-    clearDebugLog,
     refreshPersonalization
   } = usePersonalization();
 
@@ -43,7 +42,7 @@ const PersonalizationDebugPanel = () => {
 
   const copySnapshot = () => {
     navigator.clipboard.writeText(
-      JSON.stringify({ scenario, intentScore, notifications, debugLog, sessionId }, null, 2)
+      JSON.stringify({ scenario, intentScore, notifications, recentActivities, sessionId }, null, 2)
     );
   };
 
@@ -101,23 +100,25 @@ const PersonalizationDebugPanel = () => {
           </section>
 
           <section className="p13n-debug__section">
-            <h4 className="p13n-debug__section-title">Recent tracks ({debugLog?.length || 0})</h4>
-            {debugLog?.length ? (
+            <h4 className="p13n-debug__section-title">Recent tracks ({recentActivities?.length || 0})</h4>
+            {recentActivities?.length ? (
               <table className="p13n-debug__table">
                 <thead>
-                  <tr><th>time</th><th>event</th><th>destination</th></tr>
+                  <tr><th>time</th><th>event</th><th>destination</th><th>pts</th><th>src</th></tr>
                 </thead>
                 <tbody>
-                  {debugLog.map((e, i) => (
+                  {recentActivities.map((e, i) => (
                     <tr key={i}>
                       <td>{formatTime(e.at)}</td>
                       <td>{e.eventType}</td>
-                      <td>{e.metadata?.destination || '—'}</td>
+                      <td>{e.metadata?.destination || e.metadata?.city || '—'}</td>
+                      <td>{e.intentPoints ?? '—'}</td>
+                      <td>{e.source || 'server'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            ) : <div className="p13n-debug__muted">no events yet</div>}
+            ) : <div className="p13n-debug__muted">no server events yet</div>}
           </section>
 
           <section className="p13n-debug__section">
@@ -136,7 +137,6 @@ const PersonalizationDebugPanel = () => {
 
           <div className="p13n-debug__actions">
             <button type="button" className="p13n-debug__btn" onClick={refreshPersonalization}>Refresh</button>
-            <button type="button" className="p13n-debug__btn" onClick={clearDebugLog}>Clear log</button>
             <button type="button" className="p13n-debug__btn" onClick={copySnapshot}>Copy snapshot</button>
           </div>
         </div>

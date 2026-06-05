@@ -59,6 +59,14 @@ jest.mock('../../models/RecommendationCache', () => ({
   updateOne: jest.fn().mockResolvedValue({})
 }));
 
+jest.mock('../../models/UserActivity', () => ({
+  find: jest.fn()
+}));
+
+jest.mock('../../services/notificationEngine', () => ({
+  selectScenario: jest.fn().mockReturnValue('standard_recs')
+}));
+
 // ── Auth middleware mock ──────────────────────────────────────────────────────
 // protect: always injects a fake user
 // optionalAuth: can be switched per test via a module-level flag
@@ -87,6 +95,7 @@ const { getRecommendations, invalidateCache } = require('../../services/recommen
 const UserPreference      = require('../../models/UserPreference');
 const UserIntentScore     = require('../../models/UserIntentScore');
 const RecommendationCache = require('../../models/RecommendationCache');
+const UserActivity        = require('../../models/UserActivity');
 
 function buildApp() {
   const app = express();
@@ -124,6 +133,15 @@ beforeEach(() => {
     lean:   jest.fn().mockResolvedValue(null)
   });
   RecommendationCache.updateOne.mockResolvedValue({});
+  UserActivity.find.mockReturnValue({
+    sort: jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue([])
+        })
+      })
+    })
+  });
 });
 
 // ── POST /api/personalization/track ──────────────────────────────────────────
@@ -371,5 +389,52 @@ describe('DELETE /api/personalization/wishlist/:itemId', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
+  });
+});
+
+describe('GET /api/personalization/activities', () => {
+  it('returns recent UserActivity rows for user', async () => {
+    const createdAt = new Date('2026-06-05T10:00:00Z');
+    UserActivity.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue([
+              {
+                eventType: 'flight_search',
+                metadata: { destination: 'Dubai' },
+                sessionId: 'sess1',
+                intentPoints: 5,
+                createdAt
+              }
+            ])
+          })
+        })
+      })
+    });
+
+    const res = await request(app).get('/api/personalization/activities');
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.activities).toHaveLength(1);
+    expect(res.body.activities[0].eventType).toBe('flight_search');
+    expect(res.body.activities[0].metadata.destination).toBe('Dubai');
+    expect(res.body.activities[0].source).toBe('server');
+  });
+
+  it('respects limit query param capped at 50', async () => {
+    const limit = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([])
+      })
+    });
+    UserActivity.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({ limit })
+    });
+
+    await request(app).get('/api/personalization/activities?limit=100');
+
+    expect(limit).toHaveBeenCalledWith(50);
   });
 });
