@@ -288,7 +288,6 @@ export default function HomePage() {
         <div className="hero-bg-overlay" />
         <div className="hero-content">
           <div className="hero-tagline">
-            <span className="tagline-chip">18th Anniversary Sale</span>
             <h1>Search Lowest Fares</h1>
             <p>Flights, Hotels, Trains, Buses, Holidays & more — all in one place</p>
             <Link to="/ai" className="ai-chip-link">
