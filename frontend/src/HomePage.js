@@ -33,7 +33,6 @@ const AIRPORTS = [
 ];
 
 const OFFERS = [
-  { id: 1, title: 'Anniversary Sale', subtitle: 'Up to ₹10,000 OFF on Travel', code: 'DART18', validTill: '15 Jun 2026', type: 'flight', tag: 'Exclusive', color: '#2F4858' },
   { id: 2, title: 'No Convenience Fee', subtitle: 'Book Flights for Free*', code: 'DARTNCF', validTill: '30 Jun 2026', type: 'flight', tag: 'Hot Deal', color: '#1a6b4a' },
   { id: 3, title: 'New User Offer', subtitle: 'Save ₹500 on First Booking', code: 'DARTFIRST', validTill: '30 Jun 2026', type: 'general', tag: 'New User', color: '#4a3060' },
   { id: 4, title: 'Hotel Deals', subtitle: 'Up to 40% Off on Hotels', code: 'DARTHOTEL', validTill: '31 Jul 2026', type: 'hotel', tag: 'Trending', color: '#8B2500' },
@@ -149,7 +148,7 @@ const TravellerPanel = ({ adults, children, infants, cabin, onChange, onClose })
   return (
     <div className="traveller-panel">
       <div className="traveller-panel-header">
-        <span>Travellers & Cabin</span>
+        <span>Travelers & Cabin</span>
         <button onClick={onClose}><X size={16} /></button>
       </div>
       {[['adults', adults, 'Adults', '12+ years'], ['children', children, 'Children', '2-11 years'], ['infants', infants, 'Infants', 'Under 2 years']].map(([key, val, label, sub]) => (
@@ -400,7 +399,7 @@ export default function HomePage() {
                       <label>Travellers & Cabin</label>
                       <button className="travellers-btn" onClick={() => setShowTravellers(!showTravellers)}>
                         <Users size={16} />
-                        <span>{totalTravellers} Traveller{totalTravellers !== 1 ? 's' : ''}, {cabin}</span>
+                        <span>{totalTravellers} Traveler{totalTravellers !== 1 ? 's' : ''}, {cabin}</span>
                         <ChevronDown size={14} />
                       </button>
                       {showTravellers && (
