@@ -1,0 +1,15 @@
+{
+  "short_name": "DataArt Travel",
+  "name": "DataArt Travel - Book Flights & Hotels",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1B3A5C",
+  "background_color": "#ffffff"
+}

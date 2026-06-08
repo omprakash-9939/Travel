@@ -34,7 +34,6 @@ const AIRPORTS = [
 
 // ─── Offer Cards Data ────────────────────────────────────────────────────────
 const OFFERS = [
-  { id: 1, title: 'Anniversary Sale', subtitle: 'Up to ₹10,000 OFF on Travel', code: 'DART18', validTill: '15 Jun 2026', type: 'flight', tag: 'Exclusive', color: '#2F4858' },
   { id: 2, title: 'No Convenience Fee', subtitle: 'Book Flights for Free*', code: 'DARTNCF', validTill: '30 Jun 2026', type: 'flight', tag: 'Hot Deal', color: '#1a6b4a' },
   { id: 3, title: 'New User Offer', subtitle: 'Save ₹500 on First Booking', code: 'DARTFIRST', validTill: '30 Jun 2026', type: 'general', tag: 'New User', color: '#4a3060' },
   { id: 4, title: 'Hotel Deals', subtitle: 'Up to 40% Off on Hotels', code: 'DARTHOTEL', validTill: '31 Jul 2026', type: 'hotel', tag: 'Trending', color: '#8B2500' },
@@ -152,7 +151,7 @@ const TravellerPanel = ({ adults, children, infants, cabin, onChange, onClose })
   const cabins = ['Economy', 'Premium Economy', 'Business', 'First Class'];
   return (
     <div className="traveller-panel">
-      <div className="tp-header"><span>Travellers & Cabin Class</span><button onClick={onClose}><X size={18} /></button></div>
+      <div className="tp-header"><span>Travelers & Cabin Class</span><button onClick={onClose}><X size={18} /></button></div>
       {[['Adults', '12+ yrs', adults, 'adults'], ['Children', '2–11 yrs', children, 'children'], ['Infants', 'Under 2', infants, 'infants']].map(([label, sub, val, key]) => (
         <div className="tp-row" key={key}>
           <div><div className="tp-label">{label}</div><div className="tp-sub">{sub}</div></div>
@@ -386,10 +385,10 @@ export default function HomePage() {
 
                     {/* Travellers */}
                     <div className="field-wrap field-travellers" style={{ position: 'relative' }}>
-                      <label className="field-label">Travellers & Class</label>
+                      <label className="field-label">Travelers & Class</label>
                       <button className="traveller-btn" onClick={() => setShowTravellers(!showTravellers)}>
                         <span className="trav-count">{totalTravellers}</span>
-                        <span className="trav-label">{totalTravellers === 1 ? 'Traveller' : 'Travellers'}</span>
+                        <span className="trav-label">{totalTravellers === 1 ? 'Traveler' : 'Travelers'}</span>
                         <ChevronDown size={16} />
                       </button>
                       <div className="field-sub">{cabin}</div>

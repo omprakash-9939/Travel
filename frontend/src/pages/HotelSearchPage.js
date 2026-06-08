@@ -12,11 +12,14 @@ export default function HotelSearchPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { trackHotelView } = usePersonalization();
+  const today = new Date().toISOString().split('T')[0];
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [city, setCity] = useState(searchParams.get('city') || 'Goa');
   const [checkIn, setCheckIn] = useState(searchParams.get('checkIn') || '');
   const [checkOut, setCheckOut] = useState(searchParams.get('checkOut') || '');
+  const [guests, setGuests] = useState(Number(searchParams.get('guests') || 2));
+  const [rooms, setRooms] = useState(Number(searchParams.get('rooms') || 1));
   const [minStars, setMinStars] = useState('');
   const [dataSource, setDataSource] = useState('');
   const [extras, setExtras] = useState(null);
@@ -28,6 +31,8 @@ export default function HotelSearchPage() {
       const params = { city, guests: searchParams.get('guests') || 2, rooms: 1 };
       if (checkIn) params.checkIn = checkIn;
       if (checkOut) params.checkOut = checkOut;
+      if (guests) params.guests = guests;
+      if (rooms) params.rooms = rooms;
       if (minStars) params.minStars = minStars;
       const { data } = await api.get('/hotels/search', { params });
       setHotels(data.hotels || []);
@@ -42,9 +47,15 @@ export default function HotelSearchPage() {
 
   useEffect(() => { fetchHotels(); }, [searchParams]);
 
+  useEffect(() => {
+    if (checkOut && checkIn && checkOut < checkIn) {
+      setCheckOut(checkIn);
+    }
+  }, [checkIn, checkOut]);
+
   const handleSearch = (e) => {
     e.preventDefault();
-    const q = new URLSearchParams({ city, checkIn, checkOut });
+    const q = new URLSearchParams({ city, checkIn, checkOut, guests, rooms });
     navigate(`/hotels?${q}`);
     fetchHotels();
   };
@@ -54,8 +65,14 @@ export default function HotelSearchPage() {
       <div className="container">
         <form className="glass-card hotel-search-bar" onSubmit={handleSearch}>
           <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} aria-label="City" />
-          <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} aria-label="Check-in" />
-          <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} aria-label="Check-out" />
+          <input type="date" value={checkIn} min={today} onChange={e => setCheckIn(e.target.value)} aria-label="Check-in" />
+          <input type="date" value={checkOut} min={checkIn || today} onChange={e => setCheckOut(e.target.value)} aria-label="Check-out" />
+          <select value={guests} onChange={e => setGuests(Number(e.target.value))} aria-label="Guests">
+            {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} Guest{n > 1 ? 's' : ''}</option>)}
+          </select>
+          <select value={rooms} onChange={e => setRooms(Number(e.target.value))} aria-label="Rooms">
+            {[1,2,3,4].map(n => <option key={n} value={n}>{n} Room{n > 1 ? 's' : ''}</option>)}
+          </select>
           <select value={minStars} onChange={e => setMinStars(e.target.value)} aria-label="Minimum stars">
             <option value="">Any stars</option>
             {[3, 4, 5].map(n => <option key={n} value={n}>{n}+ stars</option>)}

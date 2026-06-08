@@ -18,6 +18,7 @@ export default function FlightSearchPage() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('price');
   const [filters, setFilters] = useState({ stops: 'all', maxPrice: '', airlines: [] });
+  const [departureFilter, setDepartureFilter] = useState('all');
   const [pricePrediction, setPricePrediction] = useState(null);
   const [dataSource, setDataSource] = useState('');
   const [searchMessage, setSearchMessage] = useState('');
@@ -78,6 +79,13 @@ export default function FlightSearchPage() {
   const filtered = sorted.filter(f => {
     const price = f.cabins?.[cabinKey]?.price ?? f.cabins?.economy?.price;
     if (filters.stops !== 'all' && f.stops !== Number(filters.stops)) return false;
+    if (departureFilter !== 'all') {
+      const depHour = new Date(f.departure).getHours();
+      if (departureFilter === 'morning' && (depHour < 5 || depHour >= 12)) return false;
+      if (departureFilter === 'afternoon' && (depHour < 12 || depHour >= 15)) return false;
+      if (departureFilter === 'evening' && (depHour < 15 || depHour >= 18)) return false;
+      if (departureFilter === 'night' && (depHour < 18 || depHour >= 24)) return false;
+    }
     if (filters.maxPrice && price > Number(filters.maxPrice)) return false;
     if (filters.airlines.length > 0 && !filters.airlines.includes(f.airline?.code)) return false;
     return true;
@@ -148,6 +156,15 @@ export default function FlightSearchPage() {
             ))}
           </div>
           <div className="filter-section">
+            <h4>Departure time</h4>
+            {['all', 'morning', 'afternoon', 'evening', 'night'].map(option => (
+              <label key={option} className="filter-option">
+                <input type="radio" name="departureTime" value={option} checked={departureFilter === option} onChange={() => setDepartureFilter(option)} />
+                {option === 'all' ? 'Any' : option === 'morning' ? 'Morning' : option === 'afternoon' ? 'Afternoon' : option === 'evening' ? 'Evening' : 'Night'}
+              </label>
+            ))}
+          </div>
+          <div className="filter-section">
             <h4>Airlines</h4>
             {airlineOptions.map(a => (
               <label key={a.code} className="filter-option">
@@ -184,6 +201,7 @@ export default function FlightSearchPage() {
                   <div>
                     <div className="fc-airline-name">{flight.airline?.name}</div>
                     <div className="fc-flight-no">{flight.flightNumber}</div>
+                    <div className="fc-date">{new Date(flight.departure).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
                   </div>
                 </div>
                 <div className="fc-times">
